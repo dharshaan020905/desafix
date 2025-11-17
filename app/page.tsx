@@ -1,27 +1,76 @@
+'use client';
+
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
+  const [scrolled, setScrolled] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-gray-900 overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/40 via-purple-50/40 to-pink-50/40"></div>
+        <div 
+          className="absolute inset-0 opacity-20 transition-opacity duration-300"
+          style={{
+            background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(99, 102, 241, 0.15), transparent 50%)`,
+          }}
+        ></div>
+        
+        {/* Floating Orbs - Much softer */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-200 rounded-full filter blur-3xl opacity-30 animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-200 rounded-full filter blur-3xl opacity-30 animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-indigo-200 rounded-full filter blur-3xl opacity-30 animate-pulse" style={{animationDelay: '2s'}}></div>
+      </div>
+
       {/* Navigation */}
-      <nav className="bg-white border-b border-gray-200">
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled ? 'bg-white/80 backdrop-blur-lg border-b border-gray-200/50 shadow-sm' : 'bg-transparent'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <span className="text-2xl font-bold text-blue-600">DesaFix</span>
+          <div className="flex justify-between items-center h-20">
+            <div className="flex items-center group cursor-pointer">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-lg blur opacity-40 group-hover:opacity-60 transition-all"></div>
+                <span className="relative text-3xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  DesaFix
+                </span>
+              </div>
             </div>
             <div className="flex gap-4">
               <Link 
                 href="/login" 
-                className="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium transition-colors"
+                className="px-6 py-2.5 text-gray-700 hover:text-gray-900 font-medium transition-all hover:scale-105"
               >
                 Login
               </Link>
               <Link 
                 href="/register" 
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors shadow-sm"
+                className="group relative px-6 py-2.5 font-semibold overflow-hidden rounded-xl transition-all hover:scale-105 shadow-sm hover:shadow-md"
               >
-                Get Started
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 transition-all"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-all"></div>
+                <span className="relative text-white">Create Account</span>
               </Link>
             </div>
           </div>
@@ -29,101 +78,245 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Hostel Facility Management
-            <span className="block text-blue-600 mt-2">Made Simple</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
-            Report facility issues, track repairs in real-time, and ensure your hostel stays in top condition.
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Link 
-              href="/register" 
-              className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-lg transition-all shadow-lg hover:shadow-xl"
-            >
-              Register Now
-            </Link>
-            <Link 
-              href="/login" 
-              className="px-8 py-4 bg-white text-blue-600 border-2 border-blue-600 rounded-lg hover:bg-blue-50 font-semibold text-lg transition-all"
-            >
-              Login
-            </Link>
+      <main className="relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
+          {/* Hero Content */}
+          <div className="text-center max-w-5xl mx-auto">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm mb-8" style={{animation: 'fadeIn 1s ease'}}>
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm text-gray-600 font-medium">Seamless Hostel Facility Management</span>
+            </div>
+
+            {/* Main Headline */}
+            <h1 className="text-6xl md:text-8xl font-black mb-6 leading-tight">
+              <span className="block bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent" style={{backgroundSize: '200% 200%', animation: 'gradient 3s ease infinite'}}>
+                DesaFix
+              </span>
+              <span className="block bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent" style={{backgroundSize: '200% 200%', animation: 'gradient 5s ease infinite'}}>
+                Universiti Sains Malaysia
+              </span>
+            </h1>
+
+            <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+              Report issues instantly, track repairs in real-time, and enjoy a seamless living experience.
+            </p>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto mt-16">
+              {[
+                { number: '500+', label: 'Active Users' },
+                { number: '98%', label: 'Satisfaction Rate' },
+                { number: '24/7', label: 'Support' }
+              ].map((stat, index) => (
+                <div key={index} className="group cursor-pointer">
+                  <div className="relative p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-gray-200 shadow-sm hover:shadow-md transition-all hover:scale-105">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-50/0 via-indigo-50/0 to-purple-50/0 group-hover:from-blue-50/50 group-hover:via-indigo-50/50 group-hover:to-purple-50/50 rounded-2xl transition-all"></div>
+                    <div className="relative">
+                      <p className="text-4xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                        {stat.number}
+                      </p>
+                      <p className="text-gray-600 font-medium">{stat.label}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Features */}
-        <div className="mt-32 grid md:grid-cols-3 gap-8">
-          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Easy Reporting</h3>
-            <p className="text-gray-600">
-              Submit facility issues with photos and detailed descriptions in seconds.
+        {/* Features Section */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl md:text-6xl font-black mb-6">
+              <span className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                Built for Excellence
+              </span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Everything you need to manage hostel facilities efficiently and effectively
             </p>
           </div>
 
-          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Real-Time Tracking</h3>
-            <p className="text-gray-600">
-              Monitor your complaint status from submission to resolution.
-            </p>
-          </div>
-
-          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Rate & Review</h3>
-            <p className="text-gray-600">
-              Provide feedback on repairs to ensure quality service.
-            </p>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: (
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                ),
+                title: 'Lightning Fast',
+                description: 'Submit complaints in seconds with our intuitive interface and instant notifications.',
+                gradient: 'from-blue-500 to-cyan-500',
+                bgGradient: 'from-blue-50 to-cyan-50'
+              },
+              {
+                icon: (
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                ),
+                title: 'Real-Time Tracking',
+                description: 'Monitor every complaint from submission to resolution with live updates.',
+                gradient: 'from-indigo-500 to-purple-500',
+                bgGradient: 'from-indigo-50 to-purple-50'
+              },
+              {
+                icon: (
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                  </svg>
+                ),
+                title: 'Quality Assured',
+                description: 'Rate services and provide feedback to maintain high-quality standards.',
+                gradient: 'from-amber-500 to-orange-500',
+                bgGradient: 'from-amber-50 to-orange-50'
+              }
+            ].map((feature, index) => (
+              <div key={index} className="group relative">
+                <div className={`absolute inset-0 bg-gradient-to-r ${feature.gradient} opacity-0 group-hover:opacity-20 transition-all blur-2xl -z-10`}></div>
+                
+                <div className="relative h-full p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-gray-200 shadow-sm hover:shadow-lg transition-all hover:scale-105 cursor-pointer">
+                  <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-r ${feature.gradient} mb-6 shadow-sm`}>
+                    <div className="text-white">
+                      {feature.icon}
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold mb-4 text-gray-900">
+                    {feature.title}
+                  </h3>
+                  
+                  <p className="text-gray-600 leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* User Types */}
-        <div className="mt-24">
-          <h2 className="text-3xl font-bold text-center mb-12">Access For Everyone</h2>
+        {/* User Types Section */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl md:text-6xl font-black mb-6">
+              <span className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                Made for Everyone
+              </span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Seamless access for students, administrators, and maintenance staff
+            </p>
+          </div>
+
           <div className="grid md:grid-cols-3 gap-6">
-            <Link href="/student/dashboard" className="bg-white p-8 rounded-xl shadow-sm border-2 border-gray-100 hover:border-blue-500 transition-all group">
-              <h3 className="text-xl font-semibold mb-2 group-hover:text-blue-600">Students</h3>
-              <p className="text-gray-600 mb-4">Submit and track your facility complaints</p>
-              <span className="text-blue-600 font-medium">Go to Dashboard →</span>
-            </Link>
+            {[
+              {
+                title: 'Students',
+                description: 'Submit and track facility complaints with ease',
+                link: '/student/dashboard',
+                icon: '🎓',
+                gradient: 'from-blue-500 to-indigo-500'
+              },
+              {
+                title: 'Administrators',
+                description: 'Manage complaints and monitor staff performance',
+                link: '/admin/dashboard',
+                icon: '👨‍💼',
+                gradient: 'from-indigo-500 to-purple-500'
+              },
+              {
+                title: 'Maintenance Staff',
+                description: 'View assignments and update task progress',
+                link: '/staff/dashboard',
+                icon: '🔧',
+                gradient: 'from-emerald-500 to-teal-500'
+              }
+            ].map((userType, index) => (
+              <Link key={index} href={userType.link} className="group relative">
+                <div className={`absolute inset-0 bg-gradient-to-r ${userType.gradient} rounded-3xl blur-xl opacity-0 group-hover:opacity-20 transition-all`}></div>
+                
+                <div className="relative h-full p-10 rounded-3xl bg-white/60 backdrop-blur-sm border border-gray-200 shadow-sm hover:shadow-lg transition-all hover:scale-105">
+                  <div className="text-6xl mb-6">{userType.icon}</div>
+                  <h3 className="text-3xl font-bold mb-4 text-gray-900">{userType.title}</h3>
+                  <p className="text-gray-600 mb-6 leading-relaxed">{userType.description}</p>
+                  
+                  <div className="flex items-center gap-2 text-gray-700 font-medium group-hover:gap-4 transition-all">
+                    <span>Access Portal</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
 
-            <Link href="/admin/dashboard" className="bg-white p-8 rounded-xl shadow-sm border-2 border-gray-100 hover:border-blue-500 transition-all group">
-              <h3 className="text-xl font-semibold mb-2 group-hover:text-blue-600">Administrators</h3>
-              <p className="text-gray-600 mb-4">Manage complaints and staff performance</p>
-              <span className="text-blue-600 font-medium">Go to Dashboard →</span>
-            </Link>
-
-            <Link href="/staff/dashboard" className="bg-white p-8 rounded-xl shadow-sm border-2 border-gray-100 hover:border-blue-500 transition-all group">
-              <h3 className="text-xl font-semibold mb-2 group-hover:text-blue-600">Staff</h3>
-              <p className="text-gray-600 mb-4">View and update assigned tasks</p>
-              <span className="text-blue-600 font-medium">Go to Dashboard →</span>
-            </Link>
+        {/* CTA Section */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+          <div className="relative rounded-3xl overflow-hidden shadow-xl">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" style={{backgroundSize: '400% 400%', animation: 'gradientXY 8s ease infinite'}}></div>
+            <div className="absolute inset-0 bg-white/10"></div>
+            
+            <div className="relative px-8 py-20 text-center">
+              <h2 className="text-5xl md:text-6xl font-black mb-6 text-white">
+                Ready for Instant <br className="hidden md:block" />And Easy Fixes?
+              </h2>
+              <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
+                Join hundreds of students already enjoying hassle-free facility management
+              </p>
+              
+              <Link 
+                href="/register" 
+                className="inline-flex items-center gap-3 px-10 py-5 bg-white text-gray-900 font-bold text-lg rounded-2xl hover:scale-105 transition-all hover:shadow-2xl"
+              >
+                Create Your Own Account
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+            </div>
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <p className="text-center text-gray-600">© 2025 Desafix. All rights reserved.</p>
+      <footer className="relative z-10 border-t border-gray-200 bg-white/60 backdrop-blur-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-3xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              DesaFix
+            </div>
+            <p className="text-gray-600">© 2025 DesaFix. Crafted with passion.</p>
+            <div className="flex gap-6">
+              {['Privacy', 'Terms', 'Contact'].map((link) => (
+                <a key={link} href="#" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  {link}
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
       </footer>
+
+      <style jsx>{`
+        @keyframes gradient {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+
+        @keyframes gradientXY {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }

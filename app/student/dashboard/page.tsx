@@ -2,14 +2,12 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
 export default function StudentDashboard() {
-  const [user] = useState({
-    name: 'Ahmad Ibrahim',
-    matricNumber: 'A12345678',
-    hostel: 'KK3 - Kolej Kediaman Ketiga',
-    room: '301'
-  });
+  const router = useRouter();
+  const { profile, signOut } = useAuth();
 
   const [complaints] = useState([
     {
@@ -40,6 +38,17 @@ export default function StudentDashboard() {
       estimatedResolution: '2024-11-12'
     }
   ]);
+
+  // const handleLogout = async () => {
+  //   await signOut();
+  //   router.push('/login');
+  // };
+
+  const handleLogout = async () => {
+    await signOut();
+    // Force a hard redirect to ensure clean logout
+    window.location.href = '/login';
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -89,9 +98,9 @@ export default function StudentDashboard() {
                 </Link>
               </div>
             </div>
-            <Link href="/login" className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium">
+            <button onClick={handleLogout} className="px-4 py-2 text-red-600 hover:text-red-900 font-medium">
               Logout
-            </Link>
+            </button>
           </div>
         </div>
       </nav>
@@ -100,9 +109,9 @@ export default function StudentDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-8 text-white mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome back, {user.name}!</h1>
+          <h1 className="text-3xl font-bold mb-2">Welcome back, {profile?.full_name}!</h1>
           <p className="text-blue-100">
-            {user.hostel} • Room {user.room} • {user.matricNumber}
+            {profile?.hostel} • Room {profile?.room_number} • {profile?.matric_number}
           </p>
         </div>
 
