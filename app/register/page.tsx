@@ -23,7 +23,7 @@ export default function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const hostels = ['KK1', 'KK2', 'KK3', 'KK4', 'KK5', 'KK6', 'KK7', 'KK8'];
+  const hostels = ['Desasiswa Aman Damai', 'Desasiswa Fajar Harapan', 'Desasiswa Bakti Permai', 'Desasiswa Cahaya Gemilang', 'Desasiswa Indah Kembara', 'Desasiswa Restu', 'Desasiswa Saujana', 'Desasiswa Tekun'];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
