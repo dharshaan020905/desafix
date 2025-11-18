@@ -2,10 +2,31 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const { profile } = useAuth();
+  const router = useRouter();
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    if (profile) {
+      switch (profile.role) {
+        case 'student':
+          router.push('/student/dashboard');
+          break;
+        case 'staff':
+          router.push('/staff/dashboard');
+          break;
+        case 'admin':
+          router.push('/admin/dashboard');
+          break;
+      }
+    }
+  }, [profile, router]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,7 +58,7 @@ export default function Home() {
           }}
         ></div>
         
-        {/* Floating Orbs - Much softer */}
+        {/* Floating Orbs */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-200 rounded-full filter blur-3xl opacity-30 animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-200 rounded-full filter blur-3xl opacity-30 animate-pulse" style={{animationDelay: '1s'}}></div>
         <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-indigo-200 rounded-full filter blur-3xl opacity-30 animate-pulse" style={{animationDelay: '2s'}}></div>
@@ -62,7 +83,7 @@ export default function Home() {
                 href="/login" 
                 className="px-6 py-2.5 text-gray-700 hover:text-gray-900 font-medium transition-all hover:scale-105"
               >
-                Login
+                Sign In
               </Link>
               <Link 
                 href="/register" 
@@ -70,7 +91,7 @@ export default function Home() {
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 transition-all"></div>
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-all"></div>
-                <span className="relative text-white">Create Account</span>
+                <span className="relative text-white">Get Started</span>
               </Link>
             </div>
           </div>
@@ -101,6 +122,30 @@ export default function Home() {
             <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
               Report issues instantly, track repairs in real-time, and enjoy a seamless living experience.
             </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+              <Link 
+                href="/register" 
+                className="group relative px-8 py-4 font-bold text-lg overflow-hidden rounded-2xl transition-all hover:scale-105 shadow-lg hover:shadow-xl"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-all"></div>
+                <span className="relative text-white flex items-center gap-2">
+                  Start Reporting Issues
+                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </span>
+              </Link>
+              
+              <Link 
+                href="/login" 
+                className="px-8 py-4 font-bold text-lg bg-white/60 backdrop-blur-sm text-gray-900 border-2 border-gray-300 rounded-2xl hover:border-blue-600 hover:text-blue-600 transition-all hover:scale-105 shadow-sm hover:shadow-md"
+              >
+                Already Have An Account?
+              </Link>
+            </div>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto mt-16">
@@ -149,7 +194,6 @@ export default function Home() {
                 title: 'Lightning Fast',
                 description: 'Submit complaints in seconds with our intuitive interface and instant notifications.',
                 gradient: 'from-blue-500 to-cyan-500',
-                bgGradient: 'from-blue-50 to-cyan-50'
               },
               {
                 icon: (
@@ -160,7 +204,6 @@ export default function Home() {
                 title: 'Real-Time Tracking',
                 description: 'Monitor every complaint from submission to resolution with live updates.',
                 gradient: 'from-indigo-500 to-purple-500',
-                bgGradient: 'from-indigo-50 to-purple-50'
               },
               {
                 icon: (
@@ -171,7 +214,6 @@ export default function Home() {
                 title: 'Quality Assured',
                 description: 'Rate services and provide feedback to maintain high-quality standards.',
                 gradient: 'from-amber-500 to-orange-500',
-                bgGradient: 'from-amber-50 to-orange-50'
               }
             ].map((feature, index) => (
               <div key={index} className="group relative">
@@ -197,16 +239,16 @@ export default function Home() {
           </div>
         </div>
 
-        {/* User Types Section */}
+        {/* Who Can Use Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
           <div className="text-center mb-20">
             <h2 className="text-5xl md:text-6xl font-black mb-6">
               <span className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                Made for Everyone
+                One Platform, All Roles
               </span>
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Seamless access for students, administrators, and maintenance staff
+              Single login, automatic access to your personalized dashboard
             </p>
           </div>
 
@@ -214,27 +256,27 @@ export default function Home() {
             {[
               {
                 title: 'Students',
-                description: 'Submit and track facility complaints with ease',
-                link: '/student/dashboard',
+                description: 'Submit and track your complaints with photos, get real-time updates, and rate resolved issues.',
                 icon: '🎓',
-                gradient: 'from-blue-500 to-indigo-500'
+                gradient: 'from-emerald-500 to-teal-500',
+                features: ['Submit Complaints', 'Track Status', 'Rate Services']
               },
               {
-                title: 'Administrators',
-                description: 'Manage complaints and monitor staff performance',
-                link: '/admin/dashboard',
-                icon: '👨‍💼',
-                gradient: 'from-indigo-500 to-purple-500'
-              },
-              {
-                title: 'Maintenance Staff',
-                description: 'View assignments and update task progress',
-                link: '/staff/dashboard',
+                title: 'Staff',
+                description: 'View assigned tasks, update progress, and manage your workload efficiently.',
                 icon: '🔧',
-                gradient: 'from-emerald-500 to-teal-500'
+                gradient: 'from-blue-500 to-indigo-500',
+                features: ['View Assignments', 'Update Progress', 'Track Performance']
+              },
+              {
+                title: 'Admins',
+                description: 'Oversee all operations, assign tasks to staff, and monitor performance analytics.',
+                icon: '👨‍💼',
+                gradient: 'from-purple-500 to-pink-500',
+                features: ['Assign Tasks', 'Monitor All', 'View Analytics']
               }
             ].map((userType, index) => (
-              <Link key={index} href={userType.link} className="group relative">
+              <div key={index} className="group relative">
                 <div className={`absolute inset-0 bg-gradient-to-r ${userType.gradient} rounded-3xl blur-xl opacity-0 group-hover:opacity-20 transition-all`}></div>
                 
                 <div className="relative h-full p-10 rounded-3xl bg-white/60 backdrop-blur-sm border border-gray-200 shadow-sm hover:shadow-lg transition-all hover:scale-105">
@@ -242,16 +284,41 @@ export default function Home() {
                   <h3 className="text-3xl font-bold mb-4 text-gray-900">{userType.title}</h3>
                   <p className="text-gray-600 mb-6 leading-relaxed">{userType.description}</p>
                   
-                  <div className="flex items-center gap-2 text-gray-700 font-medium group-hover:gap-4 transition-all">
-                    <span>Access Portal</span>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </div>
+                  <ul className="space-y-2">
+                    {userType.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-center gap-2 text-gray-700">
+                        <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="font-medium">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
+
+          {/* Single Login CTA */}
+          {/* <div className="mt-16 text-center">
+            <div className="inline-block p-8 rounded-3xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+              <p className="text-lg font-semibold text-gray-900 mb-4">
+                ✨ Smart Login System
+              </p>
+              <p className="text-gray-600 mb-6 max-w-2xl">
+                Simply sign in with your credentials and you'll be automatically directed to your personalized dashboard based on your role
+              </p>
+              <Link 
+                href="/login"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all hover:scale-105 shadow-sm"
+              >
+                Sign In Now
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+            </div>
+          </div> */}
         </div>
 
         {/* CTA Section */}
@@ -272,7 +339,7 @@ export default function Home() {
                 href="/register" 
                 className="inline-flex items-center gap-3 px-10 py-5 bg-white text-gray-900 font-bold text-lg rounded-2xl hover:scale-105 transition-all hover:shadow-2xl"
               >
-                Create Your Own Account
+                Create Your Account
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
