@@ -165,6 +165,9 @@ export default function AllComplaints() {
                 <Link href="/admin/users" className="text-gray-600 hover:text-gray-900 transition-colors">
                   Users
                 </Link>
+                <Link href="/admin/analytics" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  Analytics
+                </Link>
               </div>
             </div>
             <div className="flex items-center gap-4">

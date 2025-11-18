@@ -4,50 +4,71 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import FeedbackModal from '@/components/FeedbackModal';
 
-export default function ComplaintDetails() {
+export default function StaffComplaintDetails() {
   const params = useParams();
   const router = useRouter();
   const { profile, signOut } = useAuth();
   
   const [complaint, setComplaint] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
-  // Redirect if not student
+  const [newStatus, setNewStatus] = useState('');
+  const [workNotes, setWorkNotes] = useState('');
+
+  const statuses = ['Pending', 'In Progress', 'Resolved'];
+
+  // Redirect if not staff
   useEffect(() => {
-    if (profile && profile.role !== 'student') {
+    if (profile && profile.role !== 'staff') {
       router.push('/login');
     }
   }, [profile, router]);
 
   // Fetch complaint details
-  useEffect(() => {
+  // Fetch complaint details
+useEffect(() => {
     const fetchComplaint = async () => {
-      if (!profile?.id || profile.role !== 'student' || !params.id) return;
-
+      if (!profile?.id || profile.role !== 'staff' || !params.id) return;
+  
       try {
         const { createClient } = await import('@/lib/supabase/client');
         const supabase = createClient();
-
-        const { data, error } = await supabase
+  
+        // Fetch complaint
+        const { data: complaintData, error: complaintError } = await supabase
           .from('complaints')
           .select('*')
           .eq('id', params.id)
-          .eq('student_id', profile.id)
+          .eq('assigned_to', profile.id) // Staff can only see their assigned complaints
           .single();
-
-        if (error) throw error;
-
-        if (!data) {
-          setError('Complaint not found');
+  
+        if (complaintError) throw complaintError;
+  
+        if (!complaintData) {
+          setError('Complaint not found or not assigned to you');
           return;
         }
-
-        setComplaint(data);
+  
+        // Fetch student details separately
+        const { data: studentData, error: studentError } = await supabase
+          .from('users')
+          .select('full_name, email, matric_number, phone')
+          .eq('id', complaintData.student_id)
+          .single();
+  
+        if (studentError) {
+          console.error('Error fetching student:', studentError);
+        }
+  
+        setComplaint({ 
+          ...complaintData, 
+          student: studentData || { full_name: 'Unknown', email: 'N/A', matric_number: 'N/A' } 
+        });
+        setNewStatus(complaintData.status);
       } catch (err: any) {
         console.error('Error fetching complaint:', err);
         setError(err.message || 'Failed to load complaint');
@@ -55,37 +76,58 @@ export default function ComplaintDetails() {
         setLoading(false);
       }
     };
-
+  
     fetchComplaint();
   }, [profile, params.id]);
 
-  const handleFeedbackSubmit = async (rating: number, feedbackText: string) => {
+  const handleUpdateStatus = async () => {
+    if (!complaint?.id || !newStatus) return;
+
+    setUpdating(true);
+    setError('');
+    setSuccess('');
+
     try {
       const { createClient } = await import('@/lib/supabase/client');
       const supabase = createClient();
 
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('complaints')
-        .update({
-          rating,
-          feedback: feedbackText,
-          feedback_submitted_at: new Date().toISOString(),
-        })
+        .update({ status: newStatus })
         .eq('id', complaint.id);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
-      setComplaint({
-        ...complaint,
-        rating,
-        feedback: feedbackText,
-        feedback_submitted_at: new Date().toISOString(),
-      });
+      setComplaint({ ...complaint, status: newStatus });
+      setSuccess('Status updated successfully!');
+      
+      // Update staff stats if resolved
+      if (newStatus === 'Resolved') {
+        await updateStaffStats();
+      }
 
-      setSuccess('Thank you for your feedback!');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
-      throw new Error(err.message || 'Failed to submit feedback');
+      console.error('Error updating status:', err);
+      setError(err.message || 'Failed to update status');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const updateStaffStats = async () => {
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const supabase = createClient();
+
+      // Increment total_completed in staff table
+      const { error } = await supabase.rpc('increment_staff_completed', {
+        staff_user_id: profile?.id
+      });
+
+      if (error) console.error('Error updating staff stats:', error);
+    } catch (err) {
+      console.error('Error updating staff stats:', err);
     }
   };
 
@@ -109,8 +151,6 @@ export default function ComplaintDetails() {
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'Resolved':
         return 'bg-green-100 text-green-800 border-green-200';
-      case 'Rejected':
-        return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -129,7 +169,7 @@ export default function ComplaintDetails() {
     }
   };
 
-  if (profile && profile.role !== 'student') {
+  if (profile && profile.role !== 'staff') {
     return null;
   }
 
@@ -151,10 +191,10 @@ export default function ComplaintDetails() {
           <svg className="mx-auto h-12 w-12 text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Complaint Not Found</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <Link
-            href="/student/dashboard"
+            href="/staff/dashboard"
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
           >
             Back to Dashboard
@@ -175,19 +215,16 @@ export default function ComplaintDetails() {
                 DesaFix
               </Link>
               <div className="hidden md:flex gap-6">
-                <Link href="/student/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Dashboard
+                <Link href="/staff/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  My Tasks
                 </Link>
-                <Link href="/student/complaints/new" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  New Complaint
-                </Link>
-                <Link href="/student/profile" className="text-gray-600 hover:text-gray-900 transition-colors">
+                <Link href="/staff/profile" className="text-gray-600 hover:text-gray-900 transition-colors">
                   Profile
                 </Link>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{profile?.full_name}</span>
+              <span className="text-sm text-gray-600">Staff: {profile?.full_name}</span>
               <button onClick={handleLogout} className="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium">
                 Logout
               </button>
@@ -200,18 +237,23 @@ export default function ComplaintDetails() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <div className="mb-6">
-          <Link href="/student/dashboard" className="text-blue-600 hover:text-blue-700 flex items-center gap-2 font-medium">
+          <Link href="/staff/dashboard" className="text-blue-600 hover:text-blue-700 flex items-center gap-2 font-medium">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Back to Dashboard
+            Back to My Tasks
           </Link>
         </div>
 
-        {/* Success Message */}
+        {/* Success/Error Messages */}
         {success && (
           <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
             {success}
+          </div>
+        )}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            {error}
           </div>
         )}
 
@@ -224,7 +266,7 @@ export default function ComplaintDetails() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <h1 className="text-3xl font-bold mb-2">{complaint?.title}</h1>
-                    <p className="text-blue-100">ID: {complaint?.id.slice(0, 8).toUpperCase()}</p>
+                    <p className="text-blue-100">Task ID: {complaint?.id.slice(0, 8).toUpperCase()}</p>
                   </div>
                   <span className={`px-4 py-2 text-sm font-semibold rounded-full border-2 ${getStatusColor(complaint?.status)} bg-white`}>
                     {complaint?.status}
@@ -237,7 +279,7 @@ export default function ComplaintDetails() {
                 {/* Image */}
                 {complaint?.image_url && (
                   <div className="mb-8">
-                    <h3 className="text-sm font-medium text-gray-700 mb-3">Attached Photo</h3>
+                    <h3 className="text-sm font-medium text-gray-700 mb-3">Photo Evidence</h3>
                     <img
                       src={complaint.image_url}
                       alt="Complaint"
@@ -248,14 +290,14 @@ export default function ComplaintDetails() {
 
                 {/* Description */}
                 <div className="mb-8">
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">Description</h3>
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">Issue Description</h3>
                   <p className="text-gray-900 leading-relaxed">{complaint?.description}</p>
                 </div>
 
                 {/* Details Grid */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h3 className="text-sm font-medium text-gray-700 mb-4">Complaint Details</h3>
+                    <h3 className="text-sm font-medium text-gray-700 mb-4">Task Details</h3>
                     <div className="space-y-4">
                       <div className="flex items-start gap-3">
                         <svg className="w-5 h-5 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -284,13 +326,12 @@ export default function ComplaintDetails() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <div>
-                          <p className="text-xs text-gray-500">Submitted On</p>
+                          <p className="text-xs text-gray-500">Reported On</p>
                           <p className="text-sm font-medium text-gray-900">
                             {new Date(complaint?.created_at).toLocaleDateString('en-US', {
-                              weekday: 'long',
-                              year: 'numeric',
-                              month: 'long',
+                              month: 'short',
                               day: 'numeric',
+                              year: 'numeric',
                               hour: '2-digit',
                               minute: '2-digit'
                             })}
@@ -329,98 +370,95 @@ export default function ComplaintDetails() {
             </div>
           </div>
 
-          {/* Sidebar */}
+          {/* Sidebar - Student Info & Actions */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Status Card */}
+            {/* Student Contact */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Status</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Student Contact</h3>
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">Current Status</p>
-                  <span className={`inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-full border ${getStatusColor(complaint?.status)}`}>
-                    {complaint?.status}
-                  </span>
+                  <p className="text-xs text-gray-500">Name</p>
+                  <p className="text-sm font-medium text-gray-900">{complaint?.student?.full_name}</p>
                 </div>
-              </div>
-            </div>
-
-            {/* Feedback Section - Only show for resolved complaints without feedback */}
-            {complaint?.status === 'Resolved' && !complaint?.feedback_submitted_at && (
-              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6">
-                <div className="flex items-start gap-3 mb-4">
-                  <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
+                <div>
+                  <p className="text-xs text-gray-500">Matric Number</p>
+                  <p className="text-sm font-medium text-gray-900">{complaint?.student?.matric_number}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Email</p>
+                  <p className="text-sm font-medium text-gray-900 break-all">{complaint?.student?.email}</p>
+                </div>
+                {complaint?.student?.phone && (
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Complaint Resolved!</h3>
-                    <p className="text-sm text-gray-600">How was your experience? Your feedback helps us improve!</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowFeedbackModal(true)}
-                  className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                  </svg>
-                  Rate Your Experience
-                </button>
-              </div>
-            )}
-
-            {/* Already Submitted Feedback */}
-            {complaint?.feedback_submitted_at && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <h3 className="text-sm font-semibold text-gray-900">Feedback Submitted</h3>
-                </div>
-                <div className="mb-2">
-                  <p className="text-xs text-gray-600 mb-1">Your Rating:</p>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <svg
-                        key={star}
-                        className={`w-5 h-5 ${
-                          star <= (complaint?.rating || 0) ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                        }`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                        />
-                      </svg>
-                    ))}
-                  </div>
-                </div>
-                {complaint?.feedback && (
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">Your Feedback:</p>
-                    <p className="text-sm text-gray-700 italic">"{complaint.feedback}"</p>
+                    <p className="text-xs text-gray-500">Phone</p>
+                    <p className="text-sm font-medium text-gray-900">{complaint.student.phone}</p>
                   </div>
                 )}
               </div>
-            )}
+            </div>
+
+            {/* Update Status */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Update Status</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+                    Change Status
+                  </label>
+                  <select
+                    id="status"
+                    value={newStatus}
+                    onChange={(e) => setNewStatus(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={updating}
+                  >
+                    {statuses.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  onClick={handleUpdateStatus}
+                  disabled={updating || newStatus === complaint?.status}
+                  className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {updating ? 'Updating...' : 'Update Status'}
+                </button>
+
+                {newStatus === 'Resolved' && newStatus !== complaint?.status && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <p className="text-xs text-green-700">
+                      💡 This will mark the task as completed and update your statistics.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="bg-gray-50 rounded-xl border border-gray-200 p-6">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Quick Tips</h3>
+              <ul className="space-y-2 text-xs text-gray-600">
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-600 mt-0.5">•</span>
+                  <span>Update status to "In Progress" when you start working</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-600 mt-0.5">•</span>
+                  <span>Contact the student if you need more details</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-600 mt-0.5">•</span>
+                  <span>Mark as "Resolved" only when work is complete</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
-
-        {/* Feedback Modal */}
-        <FeedbackModal
-          complaintId={complaint?.id || ''}
-          complaintTitle={complaint?.title || ''}
-          isOpen={showFeedbackModal}
-          onClose={() => setShowFeedbackModal(false)}
-          onSubmit={handleFeedbackSubmit}
-        />
       </main>
     </div>
   );

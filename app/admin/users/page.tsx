@@ -145,6 +145,9 @@ export default function UsersManagement() {
                 <Link href="/admin/users" className="text-blue-600 font-medium border-b-2 border-blue-600 pb-1">
                   Users
                 </Link>
+                <Link href="/admin/analytics" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  Analytics
+                </Link>
               </div>
             </div>
             <div className="flex items-center gap-4">

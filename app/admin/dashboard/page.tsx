@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -146,6 +147,9 @@ export default function AdminDashboard() {
                 </Link>
                 <Link href="/admin/users" className="text-gray-600 hover:text-gray-900 transition-colors">
                   Users
+                </Link>
+                <Link href="/admin/analytics" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  Analytics
                 </Link>
               </div>
             </div>
