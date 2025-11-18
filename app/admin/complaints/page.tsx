@@ -5,19 +5,16 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 
-export default function AdminDashboard() {
+export default function AllComplaints() {
   const router = useRouter();
   const { profile, signOut } = useAuth();
 
   const [complaints, setComplaints] = useState<any[]>([]);
-  const [stats, setStats] = useState({
-    total: 0,
-    pending: 0,
-    inProgress: 0,
-    resolved: 0,
-    rejected: 0,
-  });
+  const [filteredComplaints, setFilteredComplaints] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [urgencyFilter, setUrgencyFilter] = useState('All');
 
   // Redirect if not admin
   useEffect(() => {
@@ -33,13 +30,13 @@ export default function AdminDashboard() {
     const fetchComplaints = async () => {
       if (!profile?.id || profile.role !== 'admin' || !isMounted) return;
   
-      setLoading(true); // ← Make sure this is here!
+      setLoading(true);
   
       try {
         const { createClient } = await import('@/lib/supabase/client');
         const supabase = createClient();
   
-        console.log('Fetching all complaints for admin...');
+        console.log('Fetching all complaints...');
   
         const { data, error } = await supabase
           .from('complaints')
@@ -55,19 +52,13 @@ export default function AdminDashboard() {
   
         if (isMounted) {
           setComplaints(data || []);
-  
-          const total = data?.length || 0;
-          const pending = data?.filter(c => c.status === 'Pending').length || 0;
-          const inProgress = data?.filter(c => c.status === 'In Progress').length || 0;
-          const resolved = data?.filter(c => c.status === 'Resolved').length || 0;
-          const rejected = data?.filter(c => c.status === 'Rejected').length || 0;
-  
-          setStats({ total, pending, inProgress, resolved, rejected });
+          setFilteredComplaints(data || []);
         }
       } catch (err) {
         console.error('Error fetching complaints:', err);
         if (isMounted) {
           setComplaints([]);
+          setFilteredComplaints([]);
         }
       } finally {
         if (isMounted) {
@@ -81,7 +72,34 @@ export default function AdminDashboard() {
     return () => {
       isMounted = false;
     };
-  }, [profile?.id, profile?.role]); // ← Depend only on id and role
+  }, [profile?.id, profile?.role]);
+
+  // Filter complaints
+  useEffect(() => {
+    let filtered = [...complaints];
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(c => 
+        c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.student?.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.hostel.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== 'All') {
+      filtered = filtered.filter(c => c.status === statusFilter);
+    }
+
+    // Urgency filter
+    if (urgencyFilter !== 'All') {
+      filtered = filtered.filter(c => c.urgency === urgencyFilter);
+    }
+
+    setFilteredComplaints(filtered);
+  }, [searchTerm, statusFilter, urgencyFilter, complaints]);
 
   const handleLogout = async () => {
     try {
@@ -124,7 +142,7 @@ export default function AdminDashboard() {
   };
 
   if (profile && profile.role !== 'admin') {
-    return null; // Will redirect
+    return null;
   }
 
   return (
@@ -138,10 +156,10 @@ export default function AdminDashboard() {
                 DesaFix
               </Link>
               <div className="hidden md:flex gap-6">
-                <Link href="/admin/dashboard" className="text-blue-600 font-medium border-b-2 border-blue-600 pb-1">
+                <Link href="/admin/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
                   Dashboard
                 </Link>
-                <Link href="/admin/complaints" className="text-gray-600 hover:text-gray-900 transition-colors">
+                <Link href="/admin/complaints" className="text-blue-600 font-medium border-b-2 border-blue-600 pb-1">
                   All Complaints
                 </Link>
                 <Link href="/admin/users" className="text-gray-600 hover:text-gray-900 transition-colors">
@@ -163,104 +181,97 @@ export default function AdminDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage all complaints and users</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">All Complaints</h1>
+          <p className="text-gray-600">View and manage all student complaints</p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid md:grid-cols-5 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">Total</p>
-              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        {/* Filters */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+          <div className="grid md:grid-cols-3 gap-4">
+            {/* Search */}
+            <div>
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
+                Search
+              </label>
+              <div className="relative">
+                <input
+                  id="search"
+                  type="text"
+                  placeholder="Search complaints..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <svg className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
             </div>
-            <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+
+            {/* Status Filter */}
+            <div>
+              <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-2">
+                Status
+              </label>
+              <select
+                id="status-filter"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="All">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Resolved">Resolved</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </div>
+
+            {/* Urgency Filter */}
+            <div>
+              <label htmlFor="urgency-filter" className="block text-sm font-medium text-gray-700 mb-2">
+                Urgency
+              </label>
+              <select
+                id="urgency-filter"
+                value={urgencyFilter}
+                onChange={(e) => setUrgencyFilter(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="All">All Urgencies</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">Pending</p>
-              <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-            <p className="text-3xl font-bold text-yellow-600">{stats.pending}</p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">In Progress</p>
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-            </div>
-            <p className="text-3xl font-bold text-blue-600">{stats.inProgress}</p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">Resolved</p>
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-            </div>
-            <p className="text-3xl font-bold text-green-600">{stats.resolved}</p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">Rejected</p>
-              <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-            </div>
-            <p className="text-3xl font-bold text-red-600">{stats.rejected}</p>
+          {/* Results Count */}
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <p className="text-sm text-gray-600">
+              Showing <span className="font-semibold text-gray-900">{filteredComplaints.length}</span> of <span className="font-semibold text-gray-900">{complaints.length}</span> complaints
+            </p>
           </div>
         </div>
 
-        {/* Recent Complaints */}
+        {/* Complaints List */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Complaints</h2>
-            <Link
-              href="/admin/complaints"
-              className="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-1"
-            >
-              View All
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
-
           {loading ? (
             <div className="p-12 text-center">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               <p className="mt-4 text-gray-600">Loading complaints...</p>
             </div>
-          ) : complaints.length === 0 ? (
+          ) : filteredComplaints.length === 0 ? (
             <div className="p-12 text-center">
               <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No complaints yet</h3>
-              <p className="mt-1 text-sm text-gray-500">Complaints will appear here as students submit them.</p>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No complaints found</h3>
+              <p className="mt-1 text-sm text-gray-500">Try adjusting your search or filters.</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
-              {complaints.slice(0, 10).map((complaint) => (
+              {filteredComplaints.map((complaint) => (
                 <div key={complaint.id} className="p-6 hover:bg-gray-50 transition-colors">
                   <div className="flex items-start justify-between gap-6">
                     <div className="flex-1 min-w-0">
@@ -271,9 +282,9 @@ export default function AdminDashboard() {
                         </span>
                       </div>
 
-                      <p className="text-sm text-gray-600 mb-3">{complaint.description}</p>
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{complaint.description}</p>
 
-                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
