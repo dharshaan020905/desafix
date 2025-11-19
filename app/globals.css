@@ -1,41 +1,25 @@
 @import "tailwindcss";
 
-/* Safari & Cross-Browser Fixes */
-* {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+/* Safari Compatibility - Minimal Fix */
 
 /* Fix Safari input styling */
 input,
 textarea,
-select,
-button {
+select {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
 }
 
-/* Fix Safari flexbox issues */
-button,
-input,
-select,
-textarea {
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
-}
-
-/* Fix Safari backdrop-filter */
-.backdrop-blur-sm,
-.backdrop-blur-lg {
+/* Fix Safari backdrop-filter blur */
+.backdrop-blur-sm {
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
 
-/* Fix Safari rounded corners */
-* {
-  -webkit-border-radius: inherit;
+.backdrop-blur-lg {
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
 }
 
 /* Fix Safari gradient text */
@@ -45,12 +29,11 @@ textarea {
   -webkit-text-fill-color: transparent;
 }
 
-/* Fix Safari transform/transition */
+/* Fix Safari font smoothing */
 * {
-  -webkit-transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
-
 :root {
   --background: #ffffff;
   --foreground: #1e293b;
