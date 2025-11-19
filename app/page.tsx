@@ -8,25 +8,25 @@ import { useRouter } from 'next/navigation';
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const { profile } = useAuth();
+  const { profile, authLoading } = useAuth();
   const router = useRouter();
 
-  // Auto-redirect if already logged in
-  useEffect(() => {
-    if (profile) {
-      switch (profile.role) {
-        case 'student':
-          router.push('/student/dashboard');
-          break;
-        case 'staff':
-          router.push('/staff/dashboard');
-          break;
-        case 'admin':
-          router.push('/admin/dashboard');
-          break;
-      }
-    }
-  }, [profile, router]);
+  // // Auto-redirect if already logged in
+  // useEffect(() => {
+  //   if (profile) {
+  //     switch (profile.role) {
+  //       case 'student':
+  //         router.push('/student/dashboard');
+  //         break;
+  //       case 'staff':
+  //         router.push('/staff/dashboard');
+  //         break;
+  //       case 'admin':
+  //         router.push('/admin/dashboard');
+  //         break;
+  //     }
+  //   }
+  // }, [profile, router]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,6 +45,32 @@ export default function Home() {
       window.removeEventListener('mousemove', handleMouseMove);
     };
   }, []);
+
+  // Auto-redirect if already logged in
+useEffect(() => {
+  if (authLoading) {
+    console.log('Landing: Auth still loading...');
+    return;
+  }
+
+  if (profile?.id) {
+    console.log('Landing: Profile exists, redirecting to:', profile.role);
+    switch (profile.role) {
+      case 'student':
+        router.push('/student/dashboard');
+        break;
+      case 'staff':
+        router.push('/staff/dashboard');
+        break;
+      case 'admin':
+        router.push('/admin/dashboard');
+        break;
+    }
+  } else {
+    console.log('Landing: No profile, staying on landing page');
+  }
+}, [profile, authLoading, router]);
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-gray-900 overflow-hidden">

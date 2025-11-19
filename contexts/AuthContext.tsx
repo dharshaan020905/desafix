@@ -61,99 +61,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Initialize auth state
-  useEffect(() => {
-    console.log('Initializing auth...');
-
-    // Check if this is a fresh start (server restart or new browser session)
-    const sessionKey = 'desafix_session_active';
-    const wasActive = sessionStorage.getItem(sessionKey);
-    
-    if (!wasActive) {
-      // Fresh start - clear everything
-      console.log('Fresh start detected - clearing session');
-      localStorage.clear();
-      sessionStorage.clear();
-      supabase.auth.signOut({ scope: 'local' });
-    }
-
-    // Mark session as active
-    sessionStorage.setItem(sessionKey, 'true');
-
-    const initAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log('Session:', session);
-
-        if (session?.user) {
-          setUser(session.user);
-          await fetchProfile(session.user.id);
-        } else {
-          setUser(null);
-          setProfile(null);
-        }
-      } catch (error) {
-        console.error('Auth init error:', error);
+// Initialize auth state
+// Initialize auth state
+useEffect(() => {
+  let isMounted = true;
+  
+  const initAuth = async () => {
+    try {
+      // FORCE SIGN OUT on every page load
+      await supabase.auth.signOut({ scope: 'local' });
+      
+      if (isMounted) {
         setUser(null);
         setProfile(null);
-      } finally {
         setAuthLoading(false);
       }
-    };
-
-    initAuth();
-
-    const refreshProfile = async () => {
-  if (!user?.id) return;
-  
-  try {
-    console.log('Refreshing profile...');
-    await fetchProfile(user.id);
-  } catch (error) {
-    console.error('Error refreshing profile:', error);
-  }
-};
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event, session);
-
-        if (session?.user) {
-          setUser(session.user);
-          await fetchProfile(session.user.id);
-        } else {
-          setUser(null);
-          setProfile(null);
-        }
-
-        if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setProfile(null);
-          localStorage.clear();
-          sessionStorage.clear();
-        }
+    } catch (error) {
+      console.error('Init error:', error);
+      if (isMounted) {
+        setUser(null);
+        setProfile(null);
+        setAuthLoading(false);
       }
-    );
+    }
+  };
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+  initAuth();
 
-  // Clear session when browser/tab closes
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      // Keep session in localStorage but clear sessionStorage marker
-      sessionStorage.removeItem('desafix_session_active');
-    };
+  // Listen for auth changes ONLY
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    async (event, session) => {
+      if (!isMounted) return;
+      
+      console.log('Auth event:', event);
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+      if (event === 'SIGNED_IN' && session?.user) {
+        setUser(session.user);
+        await fetchProfile(session.user.id);
+      } else {
+        setUser(null);
+        setProfile(null);
+      }
+    }
+  );
 
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
+  return () => {
+    isMounted = false;
+    subscription.unsubscribe();
+  };
+}, []);
+
+// Clear session only when browser completely closes
+useEffect(() => {
+  const handleBeforeUnload = () => {
+    // Remove the session marker so next browser open is "fresh"
+    sessionStorage.removeItem('desafix_session_active');
+  };
+
+  window.addEventListener('beforeunload', handleBeforeUnload);
+
+  return () => {
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+  };
+}, []);
 
   const signIn = async (email: string, password: string) => {
     try {

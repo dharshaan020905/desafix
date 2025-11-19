@@ -1,25 +1,28 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
-export default function SubmitComplaint() {
+export default function SubmitComplaintPage() {
   const router = useRouter();
-  const { profile, signOut } = useAuth();
-  
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const { profile } = useAuth();
 
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     facility_type: '',
-    urgency: '',
+    urgency: 'Medium',
+    hostel: '',
+    room_number: '',
   });
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const facilityTypes = [
     'Air Conditioning',
@@ -28,12 +31,32 @@ export default function SubmitComplaint() {
     'Door/Window',
     'Furniture',
     'Internet',
-    'Other'
+    'Other',
   ];
 
-  const urgencyLevels = ['Low', 'Medium', 'High'];
+  const hostels = [
+    'Desasiswa Aman Damai',
+    'Desasiswa Fajar Harapan',
+    'Desasiswa Bakti Permai',
+    'Desasiswa Indah Kembara',
+    'Desasiswa Cahaya Gemilang',
+    'Desasiswa Restu',
+    'Desasiswa Tekun',
+    'Desasiswa Saujana',
+  ];
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  // Pre-fill hostel and room from profile
+  useEffect(() => {
+    if (profile) {
+      setFormData(prev => ({
+        ...prev,
+        hostel: profile.hostel || '',
+        room_number: profile.room_number || '',
+      }));
+    }
+  }, [profile]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -43,7 +66,20 @@ export default function SubmitComplaint() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Image size should be less than 5MB');
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        setError('Please upload an image file');
+        return;
+      }
+
       setImageFile(file);
+      
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -53,64 +89,81 @@ export default function SubmitComplaint() {
     }
   };
 
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setSuccess('');
+    setLoading(true);
 
     try {
       if (!profile?.id) {
-        throw new Error('You must be logged in to submit a complaint');
+        throw new Error('User not authenticated');
       }
 
-      // Import createClient fresh
+      // Validate required fields
+      if (!formData.title || !formData.description || !formData.facility_type || !formData.urgency) {
+        throw new Error('Please fill in all required fields');
+      }
+
       const { createClient } = await import('@/lib/supabase/client');
       const supabase = createClient();
 
       let imageUrl = null;
 
-      // Step 1: Upload image if provided
+      // Upload image if provided
       if (imageFile) {
+        console.log('Uploading image...');
         const fileExt = imageFile.name.split('.').pop();
         const fileName = `${profile.id}-${Date.now()}.${fileExt}`;
-        const filePath = `${fileName}`;
-
-        console.log('Uploading image:', filePath);
+        const filePath = `complaint-images/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
-          .from('complaint-images')
-          .upload(filePath, imageFile);
+          .from('complaints')
+          .upload(filePath, imageFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
         if (uploadError) {
           console.error('Upload error:', uploadError);
-          throw uploadError;
+          // Don't fail the whole submission if image upload fails
+          console.warn('Proceeding without image due to upload error');
+          imageUrl = null;
+        } else {
+          // Get public URL
+          const { data: urlData } = supabase.storage
+            .from('complaints')
+            .getPublicUrl(filePath);
+
+          imageUrl = urlData.publicUrl;
+          console.log('Image uploaded successfully:', imageUrl);
         }
-
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from('complaint-images')
-          .getPublicUrl(filePath);
-
-        imageUrl = publicUrl;
-        console.log('Image uploaded successfully:', imageUrl);
+      } else {
+        console.log('No image to upload, proceeding without image');
       }
 
-      // Step 2: Insert complaint into database
-      console.log('Inserting complaint...');
-      
+      // Create complaint
+      console.log('Creating complaint...');
       const { data, error: insertError } = await supabase
         .from('complaints')
-        .insert({
-          student_id: profile.id,
-          title: formData.title,
-          description: formData.description,
-          facility_type: formData.facility_type,
-          urgency: formData.urgency,
-          hostel: profile.hostel,
-          room_number: profile.room_number,
-          image_url: imageUrl,
-          status: 'Pending',
-        })
+        .insert([
+          {
+            student_id: profile.id,
+            title: formData.title,
+            description: formData.description,
+            facility_type: formData.facility_type,
+            urgency: formData.urgency,
+            hostel: formData.hostel,
+            room_number: formData.room_number,
+            image_url: imageUrl,
+            status: 'Pending',
+          },
+        ])
         .select();
 
       if (insertError) {
@@ -118,19 +171,36 @@ export default function SubmitComplaint() {
         throw insertError;
       }
 
-      console.log('Complaint submitted successfully:', data);
+      console.log('Complaint created successfully:', data);
+      setSuccess('Complaint submitted successfully! Redirecting...');
 
-      // Success! Redirect to dashboard
-      router.push('/student/dashboard?submitted=true');
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        facility_type: '',
+        urgency: 'Medium',
+        hostel: profile.hostel || '',
+        room_number: profile.room_number || '',
+      });
+      setImageFile(null);
+      setImagePreview(null);
+
+      // Redirect after 2 seconds
+      setTimeout(() => {
+        router.push('/student/dashboard');
+      }, 2000);
 
     } catch (err: any) {
       console.error('Error submitting complaint:', err);
-      setError(err.message || 'Failed to submit complaint');
+      setError(err.message || 'Failed to submit complaint. Please try again.');
+    } finally {
       setLoading(false);
     }
   };
 
   const handleLogout = async () => {
+    const { signOut } = useAuth();
     await signOut();
     window.location.href = '/login';
   };
@@ -176,11 +246,14 @@ export default function SubmitComplaint() {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Submit New Complaint</h1>
-          <p className="text-gray-600 mb-8">
-            Report a facility issue in your hostel. We'll get it fixed as soon as possible.
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">Submit New Complaint</h1>
 
+          {/* Success/Error Messages */}
+          {success && (
+            <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+              {success}
+            </div>
+          )}
           {error && (
             <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               {error}
@@ -194,14 +267,32 @@ export default function SubmitComplaint() {
                 Complaint Title *
               </label>
               <input
+                type="text"
                 id="title"
                 name="title"
-                type="text"
-                required
                 value={formData.title}
                 onChange={handleChange}
+                placeholder="Brief description of the issue"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="e.g., Broken AC Unit"
+                required
+                disabled={loading}
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                Detailed Description *
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Provide detailed information about the issue..."
+                rows={5}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                required
                 disabled={loading}
               />
             </div>
@@ -215,13 +306,13 @@ export default function SubmitComplaint() {
                 <select
                   id="facility_type"
                   name="facility_type"
-                  required
                   value={formData.facility_type}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
                   disabled={loading}
                 >
-                  <option value="">Select facility type</option>
+                  <option value="">Select type</option>
                   {facilityTypes.map((type) => (
                     <option key={type} value={type}>
                       {type}
@@ -237,155 +328,112 @@ export default function SubmitComplaint() {
                 <select
                   id="urgency"
                   name="urgency"
-                  required
                   value={formData.urgency}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
                   disabled={loading}
                 >
-                  <option value="">Select urgency</option>
-                  {urgencyLevels.map((level) => (
-                    <option key={level} value={level}>
-                      {level}
-                    </option>
-                  ))}
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
                 </select>
               </div>
             </div>
 
-            {/* Description */}
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                Description *
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                required
-                value={formData.description}
-                onChange={handleChange}
-                rows={4}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                placeholder="Please describe the issue in detail..."
-                disabled={loading}
-              />
+            {/* Hostel & Room */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="hostel" className="block text-sm font-medium text-gray-700 mb-2">
+                  Hostel *
+                </label>
+                <select
+                  id="hostel"
+                  name="hostel"
+                  value={formData.hostel}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                  disabled={loading}
+                >
+                  <option value="">Select hostel</option>
+                  {hostels.map((hostel) => (
+                    <option key={hostel} value={hostel}>
+                      {hostel}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="room_number" className="block text-sm font-medium text-gray-700 mb-2">
+                  Room Number *
+                </label>
+                <input
+                  type="text"
+                  id="room_number"
+                  name="room_number"
+                  value={formData.room_number}
+                  onChange={handleChange}
+                  placeholder="Room number"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                  disabled={loading}
+                />
+              </div>
             </div>
 
-            {/* Image Upload
-            <div>
-              <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Photo (Optional)
-              </label>
-              <input
-                id="image"
-                name="image"
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                disabled={loading}
-              />
-              {imagePreview && (
-                <div className="mt-4">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="max-w-xs rounded-lg border border-gray-300"
-                  />
-                </div>
-              )}
-            </div> */}
-
             {/* Image Upload */}
-<div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Upload Photo (Optional)
-  </label>
-  
-  {!imagePreview ? (
-    <div className="relative">
-      <input
-        id="image"
-        type="file"
-        accept="image/*"
-        onChange={handleImageChange}
-        className="hidden"
-        disabled={loading}
-      />
-      <label
-        htmlFor="image"
-        className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-      >
-        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-          <svg className="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-          </svg>
-          <p className="mb-2 text-sm text-gray-500">
-            <span className="font-semibold">Click to upload</span> or drag and drop
-          </p>
-          <p className="text-xs text-gray-500">PNG, JPG up to 10MB</p>
-        </div>
-      </label>
-    </div>
-  ) : (
-    <div className="relative inline-block">
-      <img
-        src={imagePreview}
-        alt="Preview"
-        className="max-w-md rounded-lg border border-gray-300"
-      />
-      <button
-        type="button"
-        onClick={() => {
-          setImageFile(null);
-          setImagePreview(null);
-        }}
-        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors shadow-lg"
-        disabled={loading}
-      >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </div>
-  )}
-</div>
-
-            {/* Location Info */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-semibold text-gray-900 mb-2">Location Information</h3>
-              <p className="text-sm text-gray-700">
-                <strong>Hostel:</strong> {profile?.hostel}<br />
-                <strong>Room:</strong> {profile?.room_number}
-              </p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload Image (Optional)
+              </label>
+              <div className="mt-2">
+                {!imagePreview ? (
+                  <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <svg className="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                      <p className="mb-2 text-sm text-gray-500">
+                        <span className="font-semibold">Click to upload</span> or drag and drop
+                      </p>
+                      <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      disabled={loading}
+                    />
+                  </label>
+                ) : (
+                  <div className="relative">
+                    <img src={imagePreview} alt="Preview" className="w-full h-64 object-cover rounded-lg" />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                      disabled={loading}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Submit Button */}
-            <div className="flex gap-4">
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Submitting...
-                  </span>
-                ) : (
-                  'Submit Complaint'
-                )}
-              </button>
-              <Link
-                href="/student/dashboard"
-                className="px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors text-center"
-              >
-                Cancel
-              </Link>
-            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Submitting...' : 'Submit Complaint'}
+            </button>
           </form>
         </div>
       </main>

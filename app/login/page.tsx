@@ -1,193 +1,199 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
-export default function Login() {
+export default function LoginPage() {
   const router = useRouter();
-  const { signIn, profile, user, authLoading } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { signIn, profile, authLoading } = useAuth();
+
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Debug: Log auth state changes
-  useEffect(() => {
-    console.log('Auth State:', { user: !!user, profile, authLoading });
-  }, [user, profile, authLoading]);
+// Redirect if already logged in - BUT only after auth finishes loading
+useEffect(() => {
+  // Don't do anything while still checking auth
+  if (authLoading) {
+    console.log('Still checking auth status...');
+    return;
+  }
 
-  // Redirect when profile is loaded
-  useEffect(() => {
-    if (!authLoading && profile) {
-      console.log('Profile loaded, redirecting...', profile);
-      
-      if (profile.role === 'student') {
-        console.log('Redirecting to student dashboard');
+  // Only redirect if we actually have a profile
+  if (profile?.id) {
+    console.log('Already logged in, redirecting to:', profile.role);
+    switch (profile.role) {
+      case 'student':
         router.push('/student/dashboard');
-      } else if (profile.role === 'admin') {
-        console.log('Redirecting to admin dashboard');
-        router.push('/admin/dashboard');
-      } else if (profile.role === 'staff') {
-        console.log('Redirecting to staff dashboard');
+        break;
+      case 'staff':
         router.push('/staff/dashboard');
-      }
+        break;
+      case 'admin':
+        router.push('/admin/dashboard');
+        break;
     }
-  }, [profile, authLoading, router]);
+  } else {
+    console.log('Not logged in, showing login form');
+  }
+}, [profile, authLoading, router]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
-    console.log('Attempting login...');
-
+  
     try {
-      const { error } = await signIn(email, password);
-
-      if (error) {
-        console.error('Login error:', error);
-        setError(error.message || 'Invalid email or password');
-        setLoading(false);
-        return;
+      const { error } = await signIn(formData.email, formData.password);
+      if (error) throw error;
+  
+      // Wait for profile
+      await new Promise(resolve => setTimeout(resolve, 1500));
+  
+      // NOW redirect based on role
+      if (profile) {
+        switch (profile.role) {
+          case 'student':
+            router.push('/student/dashboard');
+            break;
+          case 'staff':
+            router.push('/staff/dashboard');
+            break;
+          case 'admin':
+            router.push('/admin/dashboard');
+            break;
+          default:
+            router.push('/');
+        }
       }
-
-      console.log('Login successful, waiting for profile...');
-      // Don't set loading to false - let redirect happen
-    } catch (err) {
-      console.error('Login exception:', err);
-      setError('An unexpected error occurred');
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
       setLoading(false);
     }
   };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo/Header */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              DesaFix
-            </h1>
-          </Link>
-          <p className="text-gray-600 mt-2">Sign in to your account</p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
+      {/* Background Decoration */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-200 rounded-full filter blur-3xl opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-200 rounded-full filter blur-3xl opacity-20 animate-pulse" style={{animationDelay: '1s'}}></div>
+      </div>
+
+      <div className="w-full max-w-md relative">
+        {/* Back to Home */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Home
+        </Link>
 
         {/* Login Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                {error}
-              </div>
-            )}
+        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200 p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+              Welcome Back
+            </h1>
+            <p className="text-gray-600">Sign in to access your dashboard</p>
+          </div>
 
-            {/* Debug Info (remove this later)
-            {process.env.NODE_ENV === 'development' && (
-              <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-xs">
-                <div>User: {user ? '✓' : '✗'}</div>
-                <div>Profile: {profile ? `✓ (${profile.role})` : '✗'}</div>
-                <div>Loading: {authLoading ? 'Yes' : 'No'}</div>
-              </div>
-            )} */}
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
 
-            {/* Email Field */}
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
               </label>
               <input
-                id="email"
                 type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="your.email@example.com"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="hello@usm.my"
                 disabled={loading}
+                required
               />
             </div>
 
-            {/* Password Field */}
+            {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
               <input
-                id="password"
                 type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="••••••••"
                 disabled={loading}
+                required
               />
-            </div>
-
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <span className="ml-2 text-sm text-gray-600">Remember me</span>
-              </label>
-              <a href="#" className="text-sm text-blue-600 hover:text-blue-700">
-                Forgot password?
-              </a>
             </div>
 
             {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
             >
-              {loading ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Signing in...
-                </span>
-              ) : (
-                'Sign In'
-              )}
+              {loading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">New to DesaFix?</span>
-            </div>
+          {/* Footer */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{' '}
+              <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+                Create Account
+              </Link>
+            </p>
           </div>
 
-          {/* Register Link */}
-          <div className="text-center">
-            <Link
-              href="/register"
-              className="inline-block w-full px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:border-blue-500 hover:text-blue-600 transition-all"
-            >
-              Create an Account
-            </Link>
-          </div>
-        </div>
-
-        {/* Back to Home */}
-        <div className="text-center mt-6">
-          <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
-            ← Back to Home
-          </Link>
+          {/* Demo Credentials */}
+          {/* <div className="mt-6 pt-6 border-t border-gray-200">
+            <p className="text-xs text-gray-500 text-center mb-3">Demo Accounts:</p>
+            <div className="space-y-2 text-xs text-gray-600">
+              <div className="bg-gray-50 p-2 rounded">
+                <strong>Student:</strong> ali.rahman@student.usm.my / Demo123!
+              </div>
+              <div className="bg-gray-50 p-2 rounded">
+                <strong>Staff:</strong> john.maintenance@usm.my / Staff123!
+              </div>
+              <div className="bg-gray-50 p-2 rounded">
+                <strong>Admin:</strong> admin@desafix.com / Admin123!
+              </div>
+            </div>
+          </div> */}
         </div>
       </div>
     </div>
