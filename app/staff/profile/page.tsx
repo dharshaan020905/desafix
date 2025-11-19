@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 
 export default function StaffProfile() {
   const router = useRouter();
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, refreshProfile } = useAuth();
 
   const [staffData, setStaffData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -151,6 +151,9 @@ useEffect(() => {
           specialization: formData.specialization,
         },
       });
+
+      // Refresh the profile in AuthContext
+      await refreshProfile();
 
       setEditing(false);
       setSuccess('Profile updated successfully!');
