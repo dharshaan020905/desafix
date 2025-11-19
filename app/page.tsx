@@ -95,25 +95,25 @@ useEffect(() => {
         scrolled ? 'bg-white/80 backdrop-blur-lg border-b border-gray-200/50 shadow-sm' : 'bg-transparent'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
+          <div className="flex justify-between items-center h-16 sm:h-20">
             <div className="flex items-center group cursor-pointer">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-lg blur opacity-40 group-hover:opacity-60 transition-all"></div>
-                <span className="relative text-3xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                <span className="relative text-xl sm:text-2xl md:text-3xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   DesaFix
                 </span>
               </div>
             </div>
-            <div className="flex gap-4">
-              <Link 
-                href="/login" 
-                className="px-6 py-2.5 text-gray-700 hover:text-gray-900 font-medium transition-all hover:scale-105"
+            <div className="flex gap-2 sm:gap-4">
+              <Link
+                href="/login"
+                className="px-3 py-2 sm:px-6 sm:py-2.5 text-sm sm:text-base text-gray-700 hover:text-gray-900 font-medium transition-all hover:scale-105"
               >
                 Sign In
               </Link>
-              <Link 
-                href="/register" 
-                className="group relative px-6 py-2.5 font-semibold overflow-hidden rounded-xl transition-all hover:scale-105 shadow-sm hover:shadow-md"
+              <Link
+                href="/register"
+                className="group relative px-3 py-2 sm:px-6 sm:py-2.5 text-sm sm:text-base font-semibold overflow-hidden rounded-xl transition-all hover:scale-105 shadow-sm hover:shadow-md"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 transition-all"></div>
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-all"></div>
@@ -126,17 +126,17 @@ useEffect(() => {
 
       {/* Hero Section */}
       <main className="relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-32 pb-12 sm:pb-16 md:pb-20">
           {/* Hero Content */}
           <div className="text-center max-w-5xl mx-auto">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm mb-8" style={{animation: 'fadeIn 1s ease'}}>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm mb-6 sm:mb-8" style={{animation: 'fadeIn 1s ease'}}>
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm text-gray-600 font-medium">Seamless Hostel Facility Management</span>
+              <span className="text-xs sm:text-sm text-gray-600 font-medium">Seamless Hostel Facility Management</span>
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-6xl md:text-8xl font-black mb-6 leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black mb-4 sm:mb-6 leading-tight">
               <span className="block bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent" style={{backgroundSize: '200% 200%', animation: 'gradient 3s ease infinite'}}>
                 DesaFix
               </span>
@@ -145,49 +145,49 @@ useEffect(() => {
               </span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-600 mb-8 sm:mb-10 md:mb-12 max-w-3xl mx-auto leading-relaxed px-4">
               Report issues instantly, track repairs in real-time, and enjoy a seamless living experience.
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-              <Link 
-                href="/register" 
-                className="group relative px-8 py-4 font-bold text-lg overflow-hidden rounded-2xl transition-all hover:scale-105 shadow-lg hover:shadow-xl"
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-12 sm:mb-16 px-4">
+              <Link
+                href="/register"
+                className="group relative px-6 py-3 sm:px-8 sm:py-4 font-bold text-base sm:text-lg overflow-hidden rounded-2xl transition-all hover:scale-105 shadow-lg hover:shadow-xl"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-all"></div>
-                <span className="relative text-white flex items-center gap-2">
+                <span className="relative text-white flex items-center justify-center gap-2">
                   Start Reporting Issues
-                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
                 </span>
               </Link>
-              
-              <Link 
-                href="/login" 
-                className="px-8 py-4 font-bold text-lg bg-white/60 backdrop-blur-sm text-gray-900 border-2 border-gray-300 rounded-2xl hover:border-blue-600 hover:text-blue-600 transition-all hover:scale-105 shadow-sm hover:shadow-md"
+
+              <Link
+                href="/login"
+                className="px-6 py-3 sm:px-8 sm:py-4 font-bold text-base sm:text-lg bg-white/60 backdrop-blur-sm text-gray-900 border-2 border-gray-300 rounded-2xl hover:border-blue-600 hover:text-blue-600 transition-all hover:scale-105 shadow-sm hover:shadow-md"
               >
                 Already Have An Account?
               </Link>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto mt-16">
+            <div className="grid grid-cols-3 gap-3 sm:gap-6 md:gap-8 max-w-3xl mx-auto mt-12 sm:mt-16 px-2 sm:px-4">
               {[
                 { number: '500+', label: 'Active Users' },
                 { number: '98%', label: 'Satisfaction Rate' },
                 { number: '24/7', label: 'Support' }
               ].map((stat, index) => (
                 <div key={index} className="group cursor-pointer">
-                  <div className="relative p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-gray-200 shadow-sm hover:shadow-md transition-all hover:scale-105">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-50/0 via-indigo-50/0 to-purple-50/0 group-hover:from-blue-50/50 group-hover:via-indigo-50/50 group-hover:to-purple-50/50 rounded-2xl transition-all"></div>
+                  <div className="relative p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl bg-white/60 backdrop-blur-sm border border-gray-200 shadow-sm hover:shadow-md transition-all hover:scale-105">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-50/0 via-indigo-50/0 to-purple-50/0 group-hover:from-blue-50/50 group-hover:via-indigo-50/50 group-hover:to-purple-50/50 rounded-xl sm:rounded-2xl transition-all"></div>
                     <div className="relative">
-                      <p className="text-4xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                      <p className="text-2xl sm:text-3xl md:text-4xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-1 sm:mb-2">
                         {stat.number}
                       </p>
-                      <p className="text-gray-600 font-medium">{stat.label}</p>
+                      <p className="text-xs sm:text-sm md:text-base text-gray-600 font-medium">{stat.label}</p>
                     </div>
                   </div>
                 </div>
@@ -197,19 +197,19 @@ useEffect(() => {
         </div>
 
         {/* Features Section */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
-          <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-black mb-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 md:py-32">
+          <div className="text-center mb-12 sm:mb-16 md:mb-20">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 sm:mb-6 px-4">
               <span className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
                 Built for Excellence
               </span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-4">
               Everything you need to manage hostel facilities efficiently and effectively
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {[
               {
                 icon: (
@@ -244,19 +244,19 @@ useEffect(() => {
             ].map((feature, index) => (
               <div key={index} className="group relative">
                 <div className={`absolute inset-0 bg-gradient-to-r ${feature.gradient} opacity-0 group-hover:opacity-20 transition-all blur-2xl -z-10`}></div>
-                
-                <div className="relative h-full p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-gray-200 shadow-sm hover:shadow-lg transition-all hover:scale-105 cursor-pointer">
-                  <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-r ${feature.gradient} mb-6 shadow-sm`}>
+
+                <div className="relative h-full p-5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-white/60 backdrop-blur-sm border border-gray-200 shadow-sm hover:shadow-lg transition-all hover:scale-105 cursor-pointer">
+                  <div className={`inline-flex p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-r ${feature.gradient} mb-4 sm:mb-6 shadow-sm`}>
                     <div className="text-white">
                       {feature.icon}
                     </div>
                   </div>
-                  
-                  <h3 className="text-2xl font-bold mb-4 text-gray-900">
+
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3 md:mb-4 text-gray-900">
                     {feature.title}
                   </h3>
-                  
-                  <p className="text-gray-600 leading-relaxed">
+
+                  <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                     {feature.description}
                   </p>
                 </div>
@@ -266,19 +266,19 @@ useEffect(() => {
         </div>
 
         {/* Who Can Use Section */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
-          <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-black mb-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 md:py-32">
+          <div className="text-center mb-12 sm:mb-16 md:mb-20">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 sm:mb-6 px-4">
               <span className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
                 One Platform, All Roles
               </span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-4">
               Single login, automatic access to your personalized dashboard
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
             {[
               {
                 title: 'Students',
@@ -303,20 +303,20 @@ useEffect(() => {
               }
             ].map((userType, index) => (
               <div key={index} className="group relative">
-                <div className={`absolute inset-0 bg-gradient-to-r ${userType.gradient} rounded-3xl blur-xl opacity-0 group-hover:opacity-20 transition-all`}></div>
-                
-                <div className="relative h-full p-10 rounded-3xl bg-white/60 backdrop-blur-sm border border-gray-200 shadow-sm hover:shadow-lg transition-all hover:scale-105">
-                  <div className="text-6xl mb-6">{userType.icon}</div>
-                  <h3 className="text-3xl font-bold mb-4 text-gray-900">{userType.title}</h3>
-                  <p className="text-gray-600 mb-6 leading-relaxed">{userType.description}</p>
-                  
+                <div className={`absolute inset-0 bg-gradient-to-r ${userType.gradient} rounded-2xl sm:rounded-3xl blur-xl opacity-0 group-hover:opacity-20 transition-all`}></div>
+
+                <div className="relative h-full p-6 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl bg-white/60 backdrop-blur-sm border border-gray-200 shadow-sm hover:shadow-lg transition-all hover:scale-105">
+                  <div className="text-4xl sm:text-5xl md:text-6xl mb-4 sm:mb-5 md:mb-6">{userType.icon}</div>
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 text-gray-900">{userType.title}</h3>
+                  <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-5 md:mb-6 leading-relaxed">{userType.description}</p>
+
                   <ul className="space-y-2">
                     {userType.features.map((feature, idx) => (
                       <li key={idx} className="flex items-center gap-2 text-gray-700">
-                        <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
-                        <span className="font-medium">{feature}</span>
+                        <span className="text-sm sm:text-base font-medium">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -348,25 +348,25 @@ useEffect(() => {
         </div>
 
         {/* CTA Section */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
-          <div className="relative rounded-3xl overflow-hidden shadow-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 md:py-32">
+          <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" style={{backgroundSize: '400% 400%', animation: 'gradientXY 8s ease infinite'}}></div>
             <div className="absolute inset-0 bg-white/10"></div>
-            
-            <div className="relative px-8 py-20 text-center">
-              <h2 className="text-5xl md:text-6xl font-black mb-6 text-white">
+
+            <div className="relative px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 text-center">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 sm:mb-5 md:mb-6 text-white">
                 Ready for Instant <br className="hidden md:block" />And Easy Fixes?
               </h2>
-              <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
+              <p className="text-base sm:text-lg md:text-xl text-white/90 mb-8 sm:mb-10 max-w-2xl mx-auto px-4">
                 Join hundreds of students already enjoying hassle-free facility management
               </p>
-              
-              <Link 
-                href="/register" 
-                className="inline-flex items-center gap-3 px-10 py-5 bg-white text-gray-900 font-bold text-lg rounded-2xl hover:scale-105 transition-all hover:shadow-2xl"
+
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-2 sm:gap-3 px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 bg-white text-gray-900 font-bold text-base sm:text-lg rounded-2xl hover:scale-105 transition-all hover:shadow-2xl"
               >
                 Create Your Account
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
               </Link>
@@ -377,15 +377,15 @@ useEffect(() => {
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-gray-200 bg-white/60 backdrop-blur-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-3xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 md:py-12">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-3 sm:gap-4">
+            <div className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               DesaFix
             </div>
-            <p className="text-gray-600">© 2025 DesaFix. Crafted with passion.</p>
-            <div className="flex gap-6">
+            <p className="text-sm sm:text-base text-gray-600 text-center">© 2025 DesaFix. Crafted with passion.</p>
+            <div className="flex gap-4 sm:gap-6">
               {['Privacy', 'Terms', 'Contact'].map((link) => (
-                <a key={link} href="#" className="text-gray-600 hover:text-gray-900 transition-colors">
+                <a key={link} href="#" className="text-sm sm:text-base text-gray-600 hover:text-gray-900 transition-colors">
                   {link}
                 </a>
               ))}
