@@ -1,29 +1,39 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
-export default function Register() {
+export default function RegisterPage() {
   const router = useRouter();
   const { signUp } = useAuth();
-  
+
   const [formData, setFormData] = useState({
-    fullName: '',
+    full_name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    matricNumber: '',
+    matric_number: '',
     hostel: '',
-    roomNumber: '',
+    room_number: '',
     phone: '',
   });
 
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const hostels = ['Desasiswa Aman Damai', 'Desasiswa Fajar Harapan', 'Desasiswa Bakti Permai', 'Desasiswa Cahaya Gemilang', 'Desasiswa Indah Kembara', 'Desasiswa Restu', 'Desasiswa Saujana', 'Desasiswa Tekun'];
+  const hostels = [
+    'Desasiswa Cahaya Gemilang',
+    'Desasiswa Fajar Harapan',
+    'Desasiswa Saujana',
+    'Desasiswa Bakti Permai',
+    'Desasiswa Indah Kembara',
+    'Desasiswa Tekun',
+    'Desasiswa Restu',
+    'Desasiswa Aman Damai',
+  ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -35,8 +45,14 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
     // Validation
+    if (!formData.full_name || !formData.email || !formData.password || !formData.matric_number || !formData.hostel || !formData.room_number || !formData.phone) {
+      setError('Please fill in all fields');
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -50,271 +66,252 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const { error } = await signUp({
-        email: formData.email,
-        password: formData.password,
-        fullName: formData.fullName,
-        matricNumber: formData.matricNumber,
-        hostel: formData.hostel,
-        roomNumber: formData.roomNumber,
-        phone: formData.phone,
+      const { error } = await signUp(
+        formData.email,
+        formData.password,
+        {
+          full_name: formData.full_name,
+          matric_number: formData.matric_number,
+          hostel: formData.hostel,
+          room_number: formData.room_number,
+          phone: formData.phone, 
+        }
+      );
+
+      if (error) throw error;
+
+      setSuccess('Registration successful! Redirecting to login...');
+      
+      // Reset form
+      setFormData({
+        full_name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        matric_number: '',
+        hostel: '',
+        room_number: '',
+        phone: '',
       });
 
-      if (error) {
-        setError(error.message || 'Registration failed');
-        setLoading(false);
-        return;
-      }
-
-      // Success! Redirect to login
-      router.push('/login?registered=true');
-    } catch (err) {
-      setError('An unexpected error occurred');
+      // Redirect to login after 2 seconds
+      setTimeout(() => {
+        router.push('/login');
+      }, 2000);
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      setError(err.message || 'Registration failed. Please try again.');
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4 py-12">
-      <div className="w-full max-w-2xl">
-        {/* Logo/Header */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              DesaFix
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
+      {/* Background Decoration */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-200 rounded-full filter blur-3xl opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-200 rounded-full filter blur-3xl opacity-20 animate-pulse" style={{animationDelay: '1s'}}></div>
+      </div>
+
+      <div className="w-full max-w-md relative">
+        {/* Back to Home */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Home
+        </Link>
+
+        {/* Registration Card */}
+        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200 p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+              Create Account
             </h1>
-          </Link>
-          <p className="text-gray-600 mt-2">Create your student account</p>
-        </div>
+            <p className="text-gray-600">Join DesaFix and start reporting issues</p>
+          </div>
 
-        {/* Register Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                {error}
-              </div>
-            )}
-
-            {/* Two Column Layout for larger screens */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Full Name */}
-              <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name *
-                </label>
-                <input
-                  id="fullName"
-                  name="fullName"
-                  type="text"
-                  required
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="Ahmad Ibrahim"
-                  disabled={loading}
-                />
-              </div>
-
-              {/* Matric Number */}
-              <div>
-                <label htmlFor="matricNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                  Matric Number *
-                </label>
-                <input
-                  id="matricNumber"
-                  name="matricNumber"
-                  type="text"
-                  required
-                  value={formData.matricNumber}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="A12345678"
-                  disabled={loading}
-                />
-              </div>
-
-              {/* Email */}
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="student@university.edu"
-                  disabled={loading}
-                />
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
-                </label>
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="+60 12-345 6789"
-                  disabled={loading}
-                />
-              </div>
-
-              {/* Hostel */}
-              <div>
-                <label htmlFor="hostel" className="block text-sm font-medium text-gray-700 mb-2">
-                  Hostel *
-                </label>
-                <select
-                  id="hostel"
-                  name="hostel"
-                  required
-                  value={formData.hostel}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  disabled={loading}
-                >
-                  <option value="">Select Hostel</option>
-                  {hostels.map((hostel) => (
-                    <option key={hostel} value={hostel}>
-                      {hostel}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Room Number */}
-              <div>
-                <label htmlFor="roomNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                  Room Number *
-                </label>
-                <input
-                  id="roomNumber"
-                  name="roomNumber"
-                  type="text"
-                  required
-                  value={formData.roomNumber}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="301"
-                  disabled={loading}
-                />
-              </div>
-
-              {/* Password */}
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Password *
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="Min. 6 characters"
-                  disabled={loading}
-                />
-              </div>
-
-              {/* Confirm Password */}
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm Password *
-                </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="Re-enter password"
-                  disabled={loading}
-                />
-              </div>
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {error}
             </div>
+          )}
 
-            {/* Terms */}
-            <div className="flex items-start">
+          {/* Success Message */}
+          {success && (
+            <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+              {success}
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Full Name */}
+            <div>
+              <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name
+              </label>
               <input
-                id="terms"
-                type="checkbox"
-                required
-                className="w-4 h-4 mt-1 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                type="text"
+                id="full_name"
+                name="full_name"
+                value={formData.full_name}
+                onChange={handleChange}
+                placeholder="Enter your full name"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 disabled={loading}
               />
-              <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
-                I agree to the{' '}
-                <a href="#" className="text-blue-600 hover:text-blue-700">
-                  Terms of Service
-                </a>{' '}
-                and{' '}
-                <a href="#" className="text-blue-600 hover:text-blue-700">
-                  Privacy Policy
-                </a>
+            </div>
+
+            {/* Email */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
               </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="your.email@student.usm.my"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Matric Number */}
+            <div>
+              <label htmlFor="matric_number" className="block text-sm font-medium text-gray-700 mb-2">
+                Matric Number
+              </label>
+              <input
+                type="text"
+                id="matric_number"
+                name="matric_number"
+                value={formData.matric_number}
+                onChange={handleChange}
+                placeholder="P123456"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Hostel */}
+            <div>
+              <label htmlFor="hostel" className="block text-sm font-medium text-gray-700 mb-2">
+                Hostel
+              </label>
+              <select
+                id="hostel"
+                name="hostel"
+                value={formData.hostel}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                disabled={loading}
+              >
+                <option value="">Select your hostel</option>
+                {hostels.map((hostel) => (
+                  <option key={hostel} value={hostel.split(' - ')[0]}>
+                    {hostel}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Room Number */}
+            <div>
+              <label htmlFor="room_number" className="block text-sm font-medium text-gray-700 mb-2">
+                Room Number
+              </label>
+              <input
+                type="text"
+                id="room_number"
+                name="room_number"
+                value={formData.room_number}
+                onChange={handleChange}
+                placeholder="123"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Phone Number */}
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="+60123456789"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Password */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="At least 6 characters"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Re-enter your password"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                disabled={loading}
+              />
             </div>
 
             {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
             >
-              {loading ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Creating Account...
-                </span>
-              ) : (
-                'Create Account'
-              )}
+              {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Already have an account?</span>
-            </div>
+          {/* Footer */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?{' '}
+              <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                Sign In
+              </Link>
+            </p>
           </div>
-
-          {/* Login Link */}
-          <div className="text-center">
-            <Link
-              href="/login"
-              className="inline-block w-full px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:border-blue-500 hover:text-blue-600 transition-all"
-            >
-              Sign In Instead
-            </Link>
-          </div>
-        </div>
-
-        {/* Back to Home */}
-        <div className="text-center mt-6">
-          <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
-            ← Back to Home
-          </Link>
         </div>
       </div>
     </div>

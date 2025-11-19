@@ -23,6 +23,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, userData: any) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -102,6 +103,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initAuth();
 
+    const refreshProfile = async () => {
+  if (!user?.id) return;
+  
+  try {
+    console.log('Refreshing profile...');
+    await fetchProfile(user.id);
+  } catch (error) {
+    console.error('Error refreshing profile:', error);
+  }
+};
+
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -170,9 +182,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
       });
-
+  
       if (signUpError) throw signUpError;
-
+  
       if (authData.user) {
         const { error: profileError } = await supabase.from('users').insert([
           {
@@ -182,13 +194,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             matric_number: userData.matric_number,
             hostel: userData.hostel,
             room_number: userData.room_number,
+            phone: userData.phone,
             role: 'student',
           },
         ]);
-
+  
         if (profileError) throw profileError;
       }
-
+  
       return { error: null };
     } catch (error: any) {
       console.error('Sign up error:', error);
@@ -217,6 +230,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const refreshProfile = async () => {
+    if (!user?.id) return;
+    
+    try {
+      console.log('Refreshing profile...');
+      await fetchProfile(user.id);
+    } catch (error) {
+      console.error('Error refreshing profile:', error);
+    }
+  };
+  
+
   return (
     <AuthContext.Provider
       value={{
@@ -226,6 +251,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn,
         signUp,
         signOut,
+        refreshProfile,
       }}
     >
       {children}
