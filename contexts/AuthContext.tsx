@@ -62,18 +62,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
 // Initialize auth state
-// Initialize auth state
 useEffect(() => {
   let isMounted = true;
-  
+
   const initAuth = async () => {
     try {
-      // FORCE SIGN OUT on every page load
-      await supabase.auth.signOut({ scope: 'local' });
-      
+      // Check for existing session
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (error) throw error;
+
       if (isMounted) {
-        setUser(null);
-        setProfile(null);
+        if (session?.user) {
+          console.log('Existing session found:', session.user.id);
+          setUser(session.user);
+          await fetchProfile(session.user.id);
+        } else {
+          console.log('No existing session');
+          setUser(null);
+          setProfile(null);
+        }
         setAuthLoading(false);
       }
     } catch (error) {
@@ -88,19 +96,21 @@ useEffect(() => {
 
   initAuth();
 
-  // Listen for auth changes ONLY
+  // Listen for auth changes
   const { data: { subscription } } = supabase.auth.onAuthStateChange(
     async (event, session) => {
       if (!isMounted) return;
-      
+
       console.log('Auth event:', event);
 
-      if (event === 'SIGNED_IN' && session?.user) {
+      if (session?.user) {
         setUser(session.user);
         await fetchProfile(session.user.id);
+        setAuthLoading(false);
       } else {
         setUser(null);
         setProfile(null);
+        setAuthLoading(false);
       }
     }
   );
@@ -182,20 +192,26 @@ useEffect(() => {
   const signOut = async () => {
     try {
       console.log('Signing out...');
-      
-      // Clear all local data
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      // Sign out from Supabase
-      await supabase.auth.signOut({ scope: 'local' });
-      
+
+      // Clear state first to immediately update UI
       setUser(null);
       setProfile(null);
-      
+
+      // Clear all storage
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // Sign out from Supabase - use 'global' to clear all sessions
+      await supabase.auth.signOut({ scope: 'global' });
+
       console.log('Sign out successful');
+
+      // Force navigation to home page
+      window.location.href = '/';
     } catch (error) {
       console.error('Sign out error:', error);
+      // Even if there's an error, still try to navigate away
+      window.location.href = '/';
       throw error;
     }
   };

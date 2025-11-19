@@ -146,36 +146,40 @@ export default function StudentProfile() {
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-8">
-              <Link href="/" className="text-2xl font-bold text-blue-600">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            <div className="flex items-center gap-3 sm:gap-8">
+              <Link href="/" className="text-lg sm:text-2xl font-bold text-blue-600 flex-shrink-0">
                 DesaFix
               </Link>
               <div className="hidden md:flex gap-6">
-                <Link href="/student/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
+                <Link href="/student/dashboard" className="text-sm sm:text-base text-gray-600 hover:text-gray-900 transition-colors">
                   Dashboard
                 </Link>
-                <Link href="/student/submit-complaint" className="text-gray-600 hover:text-gray-900 transition-colors">
+                <Link href="/student/submit-complaint" className="text-sm sm:text-base text-gray-600 hover:text-gray-900 transition-colors">
                   New Complaint
                 </Link>
-                <Link href="/student/profile" className="text-blue-600 font-medium border-b-2 border-blue-600 pb-1">
+                <Link href="/student/profile" className="text-sm sm:text-base text-blue-600 font-medium border-b-2 border-blue-600 pb-1">
                   Profile
                 </Link>
               </div>
             </div>
-            <button onClick={handleLogout} className="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium">
-              Logout
+            <button
+              onClick={handleLogout}
+              className="px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium rounded-lg hover:bg-blue-50 active:bg-blue-100 active:scale-95 transition-all flex-shrink-0"
+            >
+              <span className="hidden sm:inline">Logout</span>
+              <span className="sm:hidden">Out</span>
             </button>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <Link href="/student/dashboard" className="text-blue-600 hover:text-blue-700 flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <main className="max-w-6xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
+        <div className="mb-4 sm:mb-6">
+          <Link href="/student/dashboard" className="text-blue-600 hover:text-blue-700 flex items-center gap-2 text-sm sm:text-base">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Back to Dashboard
@@ -184,55 +188,55 @@ export default function StudentProfile() {
 
         {/* Success/Error Messages */}
         {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          <div className="mb-4 sm:mb-6 bg-green-50 border border-green-200 text-green-700 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-sm sm:text-base">
             {success}
           </div>
         )}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <div className="mb-4 sm:mb-6 bg-red-50 border border-red-200 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-sm sm:text-base">
             {error}
           </div>
         )}
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           {/* Profile Card */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+          <div className="md:col-span-1">
+            <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
               <div className="text-center mb-6">
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-3xl font-bold">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto mb-3 sm:mb-4 flex items-center justify-center text-white text-2xl sm:text-2xl md:text-3xl font-bold flex-shrink-0">
                   {profile?.full_name?.charAt(0) || 'S'}
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">{profile?.full_name}</h2>
-                <p className="text-gray-600">{profile?.matric_number}</p>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-1 line-clamp-2">{profile?.full_name}</h2>
+                <p className="text-xs sm:text-sm text-gray-600 truncate">{profile?.matric_number}</p>
               </div>
 
-              <div className="space-y-4 border-t border-gray-200 pt-6">
-                <div className="flex items-center gap-3 text-gray-600">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="space-y-3 sm:space-y-4 border-t border-gray-200 pt-4 sm:pt-6">
+                <div className="flex items-center gap-2 sm:gap-3 text-gray-600">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-sm">{profile?.email}</span>
+                  <span className="text-xs sm:text-sm truncate">{profile?.email}</span>
                 </div>
                 {profile?.phone && (
-                  <div className="flex items-center gap-3 text-gray-600">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-center gap-2 sm:gap-3 text-gray-600">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
-                    <span className="text-sm">{profile.phone}</span>
+                    <span className="text-xs sm:text-sm truncate">{profile.phone}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-3 text-gray-600">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-2 sm:gap-3 text-gray-600">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
-                  <span className="text-sm">{profile?.hostel} - Room {profile?.room_number}</span>
+                  <span className="text-xs sm:text-sm truncate">{profile?.hostel} - Room {profile?.room_number}</span>
                 </div>
               </div>
 
               {!isEditing && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="w-full mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+                  className="w-full mt-4 sm:mt-6 px-3 sm:px-4 py-2 sm:py-2.5 bg-blue-600 text-white text-sm sm:text-base rounded-lg hover:bg-blue-700 font-medium transition-colors"
                 >
                   Edit Profile
                 </button>
@@ -240,41 +244,41 @@ export default function StudentProfile() {
             </div>
 
             {/* Stats Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Statistics</h3>
-              <div className="space-y-4">
+            <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mt-4 sm:mt-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Statistics</h3>
+              <div className="space-y-3 sm:space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Total Complaints</span>
-                  <span className="text-2xl font-bold text-gray-900">{stats.totalComplaints}</span>
+                  <span className="text-xs sm:text-sm text-gray-600">Total Complaints</span>
+                  <span className="text-xl sm:text-2xl font-bold text-gray-900">{stats.totalComplaints}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Resolved</span>
-                  <span className="text-2xl font-bold text-green-600">{stats.resolved}</span>
+                  <span className="text-xs sm:text-sm text-gray-600">Resolved</span>
+                  <span className="text-xl sm:text-2xl font-bold text-green-600">{stats.resolved}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">In Progress</span>
-                  <span className="text-2xl font-bold text-blue-600">{stats.inProgress}</span>
+                  <span className="text-xs sm:text-sm text-gray-600">In Progress</span>
+                  <span className="text-xl sm:text-2xl font-bold text-blue-600">{stats.inProgress}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Pending</span>
-                  <span className="text-2xl font-bold text-yellow-600">{stats.pending}</span>
+                  <span className="text-xs sm:text-sm text-gray-600">Pending</span>
+                  <span className="text-xl sm:text-2xl font-bold text-yellow-600">{stats.pending}</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Edit Form / Information */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <div className="md:col-span-2">
+            <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
                 {isEditing ? 'Edit Profile' : 'Profile Information'}
               </h2>
 
               {isEditing ? (
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                   {/* Full Name */}
                   <div>
-                    <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                       Full Name *
                     </label>
                     <input
@@ -284,14 +288,14 @@ export default function StudentProfile() {
                       required
                       value={formData.full_name}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                       disabled={loading}
                     />
                   </div>
 
                   {/* Email (Read-only) */}
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                       Email Address
                     </label>
                     <input
@@ -299,7 +303,7 @@ export default function StudentProfile() {
                       name="email"
                       type="email"
                       value={formData.email}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed text-sm sm:text-base"
                       disabled
                     />
                     <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
@@ -307,7 +311,7 @@ export default function StudentProfile() {
 
                   {/* Phone */}
                   <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                       Phone Number
                     </label>
                     <input
@@ -316,7 +320,7 @@ export default function StudentProfile() {
                       type="tel"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                       placeholder="+60 12-345 6789"
                       disabled={loading}
                     />
@@ -324,7 +328,7 @@ export default function StudentProfile() {
 
                   {/* Hostel */}
                   <div>
-                    <label htmlFor="hostel" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="hostel" className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                       Hostel *
                     </label>
                     <select
@@ -333,7 +337,7 @@ export default function StudentProfile() {
                       required
                       value={formData.hostel}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                       disabled={loading}
                     >
                       <option value="">Select Hostel</option>
@@ -347,7 +351,7 @@ export default function StudentProfile() {
 
                   {/* Room Number */}
                   <div>
-                    <label htmlFor="room_number" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="room_number" className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                       Room Number *
                     </label>
                     <input
@@ -357,18 +361,18 @@ export default function StudentProfile() {
                       required
                       value={formData.room_number}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                       placeholder="301"
                       disabled={loading}
                     />
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-4">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2 sm:pt-4">
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-blue-600 text-white text-sm sm:text-base rounded-lg hover:bg-blue-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loading ? 'Saving...' : 'Save Changes'}
                     </button>
@@ -389,54 +393,54 @@ export default function StudentProfile() {
                         }
                       }}
                       disabled={loading}
-                      className="flex-1 px-4 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-white border-2 border-gray-300 text-gray-700 text-sm sm:text-base rounded-lg hover:bg-gray-50 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Cancel
                     </button>
                   </div>
                 </form>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {/* Display Information */}
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">Full Name</label>
-                      <p className="text-lg text-gray-900">{profile?.full_name}</p>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Full Name</label>
+                      <p className="text-sm sm:text-lg text-gray-900 truncate">{profile?.full_name}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">Matric Number</label>
-                      <p className="text-lg text-gray-900">{profile?.matric_number}</p>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Matric Number</label>
+                      <p className="text-sm sm:text-lg text-gray-900 truncate">{profile?.matric_number}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">Email</label>
-                      <p className="text-lg text-gray-900">{profile?.email}</p>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Email</label>
+                      <p className="text-sm sm:text-lg text-gray-900 truncate">{profile?.email}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">Phone</label>
-                      <p className="text-lg text-gray-900">{profile?.phone || 'Not provided'}</p>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Phone</label>
+                      <p className="text-sm sm:text-lg text-gray-900 truncate">{profile?.phone || 'Not provided'}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">Hostel</label>
-                      <p className="text-lg text-gray-900">{profile?.hostel}</p>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Hostel</label>
+                      <p className="text-sm sm:text-lg text-gray-900 truncate">{profile?.hostel}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">Room Number</label>
-                      <p className="text-lg text-gray-900">{profile?.room_number}</p>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Room Number</label>
+                      <p className="text-sm sm:text-lg text-gray-900 truncate">{profile?.room_number}</p>
                     </div>
                   </div>
 
-                  <div className="pt-6 border-t border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                    <div className="grid md:grid-cols-2 gap-4">
+                  <div className="pt-4 sm:pt-6 border-t border-gray-200">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Quick Actions</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <Link
                         href="/student/submit-complaint"
-                        className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-center font-medium transition-colors"
+                        className="px-3 sm:px-4 py-2 sm:py-3 bg-blue-600 text-white text-sm sm:text-base rounded-lg hover:bg-blue-700 text-center font-medium transition-colors active:scale-95"
                       >
                         Submit New Complaint
                       </Link>
                       <Link
                         href="/student/dashboard"
-                        className="px-4 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-center font-medium transition-colors"
+                        className="px-3 sm:px-4 py-2 sm:py-3 bg-white border-2 border-gray-300 text-gray-700 text-sm sm:text-base rounded-lg hover:bg-gray-50 text-center font-medium transition-colors active:scale-95"
                       >
                         View Dashboard
                       </Link>

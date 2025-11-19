@@ -209,58 +209,62 @@ export default function SubmitComplaintPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-8">
-              <Link href="/" className="text-2xl font-bold text-blue-600">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            <div className="flex items-center gap-3 sm:gap-8">
+              <Link href="/" className="text-lg sm:text-2xl font-bold text-blue-600 flex-shrink-0">
                 DesaFix
               </Link>
               <div className="hidden md:flex gap-6">
-                <Link href="/student/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
+                <Link href="/student/dashboard" className="text-sm sm:text-base text-gray-600 hover:text-gray-900 transition-colors">
                   Dashboard
                 </Link>
-                <Link href="/student/submit-complaint" className="text-blue-600 font-medium border-b-2 border-blue-600 pb-1">
+                <Link href="/student/submit-complaint" className="text-sm sm:text-base text-blue-600 font-medium border-b-2 border-blue-600 pb-1">
                   New Complaint
                 </Link>
-                <Link href="/student/profile" className="text-gray-600 hover:text-gray-900 transition-colors">
+                <Link href="/student/profile" className="text-sm sm:text-base text-gray-600 hover:text-gray-900 transition-colors">
                   Profile
                 </Link>
               </div>
             </div>
-            <button onClick={handleLogout} className="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium">
-              Logout
+            <button
+              onClick={handleLogout}
+              className="px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium rounded-lg hover:bg-blue-50 active:bg-blue-100 active:scale-95 transition-all flex-shrink-0"
+            >
+              <span className="hidden sm:inline">Logout</span>
+              <span className="sm:hidden">Out</span>
             </button>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <Link href="/student/dashboard" className="text-blue-600 hover:text-blue-700 flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="mb-4 sm:mb-6">
+          <Link href="/student/dashboard" className="text-blue-600 hover:text-blue-700 flex items-center gap-2 text-sm sm:text-base">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Back to Dashboard
           </Link>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Submit New Complaint</h1>
+        <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">Submit New Complaint</h1>
 
           {/* Success/Error Messages */}
           {success && (
-            <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+            <div className="mb-4 sm:mb-6 bg-green-50 border border-green-200 text-green-700 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-sm sm:text-base">
               {success}
             </div>
           )}
           {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <div className="mb-4 sm:mb-6 bg-red-50 border border-red-200 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-sm sm:text-base">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
             {/* Title */}
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
@@ -273,7 +277,7 @@ export default function SubmitComplaintPage() {
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="Brief description of the issue"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                 required
                 disabled={loading}
               />
@@ -291,14 +295,14 @@ export default function SubmitComplaintPage() {
                 onChange={handleChange}
                 placeholder="Provide detailed information about the issue..."
                 rows={5}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm sm:text-base min-h-32 sm:min-h-40"
                 required
                 disabled={loading}
               />
             </div>
 
             {/* Facility Type & Urgency */}
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label htmlFor="facility_type" className="block text-sm font-medium text-gray-700 mb-2">
                   Facility Type *
@@ -308,7 +312,7 @@ export default function SubmitComplaintPage() {
                   name="facility_type"
                   value={formData.facility_type}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                   required
                   disabled={loading}
                 >
@@ -330,7 +334,7 @@ export default function SubmitComplaintPage() {
                   name="urgency"
                   value={formData.urgency}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                   required
                   disabled={loading}
                 >
@@ -342,7 +346,7 @@ export default function SubmitComplaintPage() {
             </div>
 
             {/* Hostel & Room */}
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label htmlFor="hostel" className="block text-sm font-medium text-gray-700 mb-2">
                   Hostel *
@@ -352,7 +356,7 @@ export default function SubmitComplaintPage() {
                   name="hostel"
                   value={formData.hostel}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                   required
                   disabled={loading}
                 >
@@ -376,7 +380,7 @@ export default function SubmitComplaintPage() {
                   value={formData.room_number}
                   onChange={handleChange}
                   placeholder="Room number"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                   required
                   disabled={loading}
                 />
@@ -390,12 +394,12 @@ export default function SubmitComplaintPage() {
               </label>
               <div className="mt-2">
                 {!imagePreview ? (
-                  <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <svg className="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <label className="flex flex-col items-center justify-center w-full border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 transition-colors p-6 sm:p-10">
+                    <div className="flex flex-col items-center justify-center">
+                      <svg className="w-8 h-8 sm:w-10 sm:h-10 mb-2 sm:mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                       </svg>
-                      <p className="mb-2 text-sm text-gray-500">
+                      <p className="mb-1 sm:mb-2 text-xs sm:text-sm text-gray-500">
                         <span className="font-semibold">Click to upload</span> or drag and drop
                       </p>
                       <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
@@ -410,14 +414,14 @@ export default function SubmitComplaintPage() {
                   </label>
                 ) : (
                   <div className="relative">
-                    <img src={imagePreview} alt="Preview" className="w-full h-64 object-cover rounded-lg" />
+                    <img src={imagePreview} alt="Preview" className="w-full h-auto max-h-64 sm:max-h-80 object-cover rounded-lg" />
                     <button
                       type="button"
                       onClick={handleRemoveImage}
-                      className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                      className="absolute top-2 right-2 p-1.5 sm:p-2 bg-red-500 text-white rounded-full hover:bg-red-600 active:scale-95 transition-all"
                       disabled={loading}
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
@@ -430,7 +434,7 @@ export default function SubmitComplaintPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white font-semibold text-sm sm:text-base rounded-lg hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Submitting...' : 'Submit Complaint'}
             </button>

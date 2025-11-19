@@ -196,8 +196,8 @@ useEffect(() => {
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-8">
-              <Link href="/" className="text-2xl font-bold text-blue-600">
+            <div className="flex items-center gap-4 sm:gap-8">
+              <Link href="/" className="text-xl sm:text-2xl font-bold text-blue-600">
                 DesaFix
               </Link>
               <div className="hidden md:flex gap-6">
@@ -209,9 +209,9 @@ useEffect(() => {
                 </Link>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">Staff: {profile?.full_name}</span>
-              <button onClick={handleLogout} className="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <span className="text-xs sm:text-sm text-gray-600 hidden sm:inline">Staff: {profile?.full_name}</span>
+              <button onClick={handleLogout} className="px-3 sm:px-4 py-2 text-sm sm:text-base text-blue-600 hover:text-blue-700 font-medium">
                 Logout
               </button>
             </div>
@@ -265,13 +265,17 @@ useEffect(() => {
                   <span className="text-sm font-semibold text-gray-900">{staffData?.staff?.total_assigned || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Average Rating</span>
-                <span className="text-sm font-semibold text-yellow-600 flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                    </svg>
-                    {staffData?.staff?.calculated_rating || 'No ratings yet'}
-                </span>
+                  <span className="text-sm text-gray-600">Average Rating</span>
+                  {staffData?.staff?.calculated_rating ? (
+                    <span className="text-sm font-semibold text-yellow-600 flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
+                      {staffData.staff.calculated_rating}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-500 italic">No ratings yet</span>
+                  )}
                 </div>
               </div>
             </div>
