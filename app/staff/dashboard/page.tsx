@@ -19,6 +19,10 @@ export default function StaffDashboard() {
   const [loading, setLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+  // Filter states
+  const [statusFilter, setStatusFilter] = useState<string>('All');
+  const [urgencyFilter, setUrgencyFilter] = useState<string>('All');
+
   // Redirect if not staff
   useEffect(() => {
     if (profile && profile.role !== 'staff') {
@@ -130,6 +134,13 @@ export default function StaffDashboard() {
     }
   };
 
+  // Filter complaints based on status and urgency
+  const filteredComplaints = complaints.filter((complaint) => {
+    const matchesStatus = statusFilter === 'All' || complaint.status === statusFilter;
+    const matchesUrgency = urgencyFilter === 'All' || complaint.urgency === urgencyFilter;
+    return matchesStatus && matchesUrgency;
+  });
+
   if (profile && profile.role !== 'staff') {
     return null;
   }
@@ -239,7 +250,94 @@ export default function StaffDashboard() {
         {/* Assigned Complaints */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="p-4 sm:p-6 border-b border-gray-200">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">My Assigned Tasks</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">My Assigned Tasks</h2>
+                {!loading && complaints.length > 0 && (
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                    Showing {filteredComplaints.length} of {complaints.length} task{complaints.length !== 1 ? 's' : ''}
+                  </p>
+                )}
+              </div>
+
+              {/* Filters */}
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                {/* Status Filter */}
+                <div className="flex-1 sm:flex-initial min-w-[180px]">
+                  <label htmlFor="status-filter" className="block text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Status
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="status-filter"
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="w-full pl-4 pr-10 py-2.5 text-sm font-medium border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 transition-all hover:border-gray-300 cursor-pointer shadow-sm"
+                    >
+                      <option value="All">All Status</option>
+                      <option value="Pending">⏱️ Pending</option>
+                      <option value="In Progress">⚡ In Progress</option>
+                      <option value="Resolved">✅ Resolved</option>
+                      <option value="Rejected">❌ Rejected</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Urgency Filter */}
+                <div className="flex-1 sm:flex-initial min-w-[180px]">
+                  <label htmlFor="urgency-filter" className="block text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    Priority
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="urgency-filter"
+                      value={urgencyFilter}
+                      onChange={(e) => setUrgencyFilter(e.target.value)}
+                      className="w-full pl-4 pr-10 py-2.5 text-sm font-medium border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 transition-all hover:border-gray-300 cursor-pointer shadow-sm"
+                    >
+                      <option value="All">All Priority</option>
+                      <option value="High">🔴 High</option>
+                      <option value="Medium">🟠 Medium</option>
+                      <option value="Low">🟢 Low</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Clear Filters Button */}
+                {(statusFilter !== 'All' || urgencyFilter !== 'All') && (
+                  <div className="flex items-end">
+                    <button
+                      onClick={() => {
+                        setStatusFilter('All');
+                        setUrgencyFilter('All');
+                      }}
+                      className="w-full sm:w-auto px-4 py-2.5 text-sm font-semibold text-blue-600 hover:text-blue-700 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-lg transition-all flex items-center justify-center gap-2 border-2 border-blue-200 hover:border-blue-300 shadow-sm hover:shadow active:scale-95"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Clear
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {loading ? (
@@ -255,9 +353,26 @@ export default function StaffDashboard() {
               <h3 className="mt-2 text-xs sm:text-sm font-medium text-gray-900">No tasks assigned yet</h3>
               <p className="mt-1 text-xs sm:text-sm text-gray-500">Your assigned complaints will appear here.</p>
             </div>
+          ) : filteredComplaints.length === 0 ? (
+            <div className="p-8 sm:p-12 text-center">
+              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <h3 className="mt-2 text-xs sm:text-sm font-medium text-gray-900">No tasks match your filters</h3>
+              <p className="mt-1 text-xs sm:text-sm text-gray-500">Try adjusting your filters to see more tasks.</p>
+              <button
+                onClick={() => {
+                  setStatusFilter('All');
+                  setUrgencyFilter('All');
+                }}
+                className="mt-4 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+              >
+                Clear All Filters
+              </button>
+            </div>
           ) : (
             <div className="divide-y divide-gray-200">
-              {complaints.map((complaint) => (
+              {filteredComplaints.map((complaint) => (
                 <div key={complaint.id} className="p-4 sm:p-6 hover:bg-gray-50 transition-colors">
                   <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-6">
                     <div className="flex-1 min-w-0 w-full">
