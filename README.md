@@ -25,7 +25,7 @@ Authentication: Supabase Auth
 Installation:
 
 bash# Clone the repository
-git clone https://github.com/yourusername/desafix.git
+git clone https://github.com/dharshaan020905/desafix.git
 
 # Navigate to project directory
 cd desafix
