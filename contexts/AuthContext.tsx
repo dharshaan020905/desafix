@@ -20,18 +20,29 @@ interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   authLoading: boolean;
+  sessionWarning: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, userData: any) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  extendSession: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Session timeout constants
+const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+const WARNING_TIME = 5 * 60 * 1000; // 5 minutes warning
+
+// For testing:
+// const SESSION_TIMEOUT = 2 * 60 * 1000; // 2 minutes
+// const WARNING_TIME = 30 * 1000; // 30 seconds warning
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [sessionWarning, setSessionWarning] = useState(false);
   const supabase = createClient();
 
   // Fetch profile data
@@ -61,79 +72,125 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-// Initialize auth state
-useEffect(() => {
-  let isMounted = true;
+  // Initialize auth state
+  useEffect(() => {
+    let isMounted = true;
 
-  const initAuth = async () => {
-    try {
-      // Check for existing session
-      const { data: { session }, error } = await supabase.auth.getSession();
+    const initAuth = async () => {
+      try {
+        // Check for existing session
+        const { data: { session }, error } = await supabase.auth.getSession();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      if (isMounted) {
-        if (session?.user) {
-          console.log('Existing session found:', session.user.id);
-          setUser(session.user);
-          await fetchProfile(session.user.id);
-        } else {
-          console.log('No existing session');
+        if (isMounted) {
+          if (session?.user) {
+            console.log('Existing session found:', session.user.id);
+            setUser(session.user);
+            await fetchProfile(session.user.id);
+          } else {
+            console.log('No existing session');
+            setUser(null);
+            setProfile(null);
+          }
+          setAuthLoading(false);
+        }
+      } catch (error) {
+        console.error('Init error:', error);
+        if (isMounted) {
           setUser(null);
           setProfile(null);
+          setAuthLoading(false);
         }
-        setAuthLoading(false);
       }
-    } catch (error) {
-      console.error('Init error:', error);
-      if (isMounted) {
-        setUser(null);
-        setProfile(null);
-        setAuthLoading(false);
+    };
+
+    initAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!isMounted) return;
+
+        console.log('Auth event:', event);
+
+        if (session?.user) {
+          setUser(session.user);
+          await fetchProfile(session.user.id);
+          setAuthLoading(false);
+        } else {
+          setUser(null);
+          setProfile(null);
+          setAuthLoading(false);
+        }
       }
-    }
-  };
+    );
 
-  initAuth();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
-  // Listen for auth changes
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(
-    async (event, session) => {
-      if (!isMounted) return;
+  // Session timeout management
+  useEffect(() => {
+    if (!user) return;
 
-      console.log('Auth event:', event);
+    let timeoutId: NodeJS.Timeout;
+    let warningTimeoutId: NodeJS.Timeout;
+    
+    const resetTimeout = () => {
+      // Clear existing timeouts
+      if (timeoutId) clearTimeout(timeoutId);
+      if (warningTimeoutId) clearTimeout(warningTimeoutId);
+      setSessionWarning(false);
+      
+      // Set warning timeout (25 minutes)
+      warningTimeoutId = setTimeout(() => {
+        setSessionWarning(true);
+      }, SESSION_TIMEOUT - WARNING_TIME);
+      
+      // Set logout timeout (30 minutes)
+      timeoutId = setTimeout(async () => {
+        console.log('Session expired due to inactivity');
+        await signOut();
+        window.location.href = '/login?session=expired';
+      }, SESSION_TIMEOUT);
+    };
+    
+    // Activity events to reset timeout
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+    
+    events.forEach(event => {
+      window.addEventListener(event, resetTimeout);
+    });
+    
+    // Initial timeout
+    resetTimeout();
+    
+    // Cleanup
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (warningTimeoutId) clearTimeout(warningTimeoutId);
+      events.forEach(event => {
+        window.removeEventListener(event, resetTimeout);
+      });
+    };
+  }, [user]);
 
-      if (session?.user) {
-        setUser(session.user);
-        await fetchProfile(session.user.id);
-        setAuthLoading(false);
-      } else {
-        setUser(null);
-        setProfile(null);
-        setAuthLoading(false);
-      }
-    }
-  );
+  // Clear session only when browser completely closes
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Remove the session marker so next browser open is "fresh"
+      sessionStorage.removeItem('desafix_session_active');
+    };
 
-  return () => {
-    isMounted = false;
-    subscription.unsubscribe();
-  };
-}, []);
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
-// Clear session only when browser completely closes
-useEffect(() => {
-  const handleBeforeUnload = () => {
-    // Remove the session marker so next browser open is "fresh"
-    sessionStorage.removeItem('desafix_session_active');
-  };
-
-  window.addEventListener('beforeunload', handleBeforeUnload);
-
-  return () => {
-    window.removeEventListener('beforeunload', handleBeforeUnload);
-  };
-}, []);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -226,7 +283,12 @@ useEffect(() => {
       console.error('Error refreshing profile:', error);
     }
   };
-  
+
+  const extendSession = () => {
+    setSessionWarning(false);
+    // The activity listener will automatically reset the timeout
+    window.dispatchEvent(new Event('mousedown'));
+  };
 
   return (
     <AuthContext.Provider
@@ -234,10 +296,12 @@ useEffect(() => {
         user,
         profile,
         authLoading,
+        sessionWarning,
         signIn,
         signUp,
         signOut,
         refreshProfile,
+        extendSession,
       }}
     >
       {children}
@@ -252,3 +316,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { signIn, profile, authLoading } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -17,32 +18,35 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-// Redirect if already logged in - BUT only after auth finishes loading
-useEffect(() => {
-  // Don't do anything while still checking auth
-  if (authLoading) {
-    console.log('Still checking auth status...');
-    return;
-  }
+  // Check if session expired
+  const sessionExpired = searchParams?.get('session') === 'expired';
 
-  // Only redirect if we actually have a profile
-  if (profile?.id) {
-    console.log('Already logged in, redirecting to:', profile.role);
-    switch (profile.role) {
-      case 'student':
-        router.push('/student/dashboard');
-        break;
-      case 'staff':
-        router.push('/staff/dashboard');
-        break;
-      case 'admin':
-        router.push('/admin/dashboard');
-        break;
+  // Redirect if already logged in - BUT only after auth finishes loading
+  useEffect(() => {
+    // Don't do anything while still checking auth
+    if (authLoading) {
+      console.log('Still checking auth status...');
+      return;
     }
-  } else {
-    console.log('Not logged in, showing login form');
-  }
-}, [profile, authLoading, router]);
+
+    // Only redirect if we actually have a profile
+    if (profile?.id) {
+      console.log('Already logged in, redirecting to:', profile.role);
+      switch (profile.role) {
+        case 'student':
+          router.push('/student/dashboard');
+          break;
+        case 'staff':
+          router.push('/staff/dashboard');
+          break;
+        case 'admin':
+          router.push('/admin/dashboard');
+          break;
+      }
+    } else {
+      console.log('Not logged in, showing login form');
+    }
+  }, [profile, authLoading, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -84,6 +88,7 @@ useEffect(() => {
       setLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center px-4 sm:px-6 py-12 sm:py-16 md:py-20">
       {/* Background Decoration */}
@@ -113,6 +118,13 @@ useEffect(() => {
             </h1>
             <p className="text-xs sm:text-sm text-gray-600">Sign in to access your dashboard</p>
           </div>
+
+          {/* Session Expired Warning */}
+          {sessionExpired && (
+            <div className="mb-4 sm:mb-6 bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 rounded-lg">
+              Your session expired due to inactivity. Please login again.
+            </div>
+          )}
 
           {/* Error Message */}
           {error && (
@@ -178,22 +190,6 @@ useEffect(() => {
               </Link>
             </p>
           </div>
-
-          {/* Demo Credentials */}
-          {/* <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center mb-3">Demo Accounts:</p>
-            <div className="space-y-2 text-xs text-gray-600">
-              <div className="bg-gray-50 p-2 rounded">
-                <strong>Student:</strong> ali.rahman@student.usm.my / Demo123!
-              </div>
-              <div className="bg-gray-50 p-2 rounded">
-                <strong>Staff:</strong> john.maintenance@usm.my / Staff123!
-              </div>
-              <div className="bg-gray-50 p-2 rounded">
-                <strong>Admin:</strong> admin@desafix.com / Admin123!
-              </div>
-            </div>
-          </div> */}
         </div>
       </div>
     </div>

@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import { validatePassword, validateEmail, sanitizeInput } from '@/lib/security';
+import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -20,6 +22,7 @@ export default function RegisterPage() {
     phone: '',
   });
 
+  const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -47,8 +50,25 @@ export default function RegisterPage() {
     setError('');
     setSuccess('');
 
+    // Sanitize inputs
+    const cleanEmail = sanitizeInput(formData.email.trim());
+    const cleanName = sanitizeInput(formData.full_name.trim());
+
+    // Validate email
+    if (!validateEmail(cleanEmail)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    // Validate password strength
+    const passwordCheck = validatePassword(formData.password);
+    if (!passwordCheck.valid) {
+      setError(passwordCheck.message);
+      return;
+    }
+
     // Validation
-    if (!formData.full_name || !formData.email || !formData.password || !formData.matric_number || !formData.hostel || !formData.room_number || !formData.phone) {
+    if (!cleanName || !cleanEmail || !formData.password || !formData.matric_number || !formData.hostel || !formData.room_number || !formData.phone) {
       setError('Please fill in all fields');
       return;
     }
@@ -58,19 +78,14 @@ export default function RegisterPage() {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
     setLoading(true);
 
     try {
       const { error } = await signUp(
-        formData.email,
+        cleanEmail,
         formData.password,
         {
-          full_name: formData.full_name,
+          full_name: cleanName,
           matric_number: formData.matric_number,
           hostel: formData.hostel,
           room_number: formData.room_number,
@@ -270,10 +285,15 @@ export default function RegisterPage() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="At least 6 characters"
-                className="w-full text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                onFocus={() => setShowPasswordRequirements(true)}
+                placeholder="Create a strong password"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 disabled={loading}
+                required
               />
+              {showPasswordRequirements && (
+                <PasswordStrengthIndicator password={formData.password} />
+              )}
             </div>
 
             {/* Confirm Password */}
