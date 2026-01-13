@@ -35,7 +35,7 @@ const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 const WARNING_TIME = 5 * 60 * 1000; // 5 minutes warning
 
 // For testing:
-// const SESSION_TIMEOUT = 2 * 60 * 1000; // 2 minutes
+// const SESSION_TIMEOUT = 1 * 60 * 1000; // 2 minutes
 // const WARNING_TIME = 30 * 1000; // 30 seconds warning
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {

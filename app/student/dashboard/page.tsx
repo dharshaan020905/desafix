@@ -9,6 +9,13 @@ export default function StudentDashboard() {
   const router = useRouter();
   const { profile, signOut } = useAuth();
 
+  // Role-based access control
+  useEffect(() => {
+    if (profile && profile.role !== 'student') {
+      router.push('/'); // Redirect non-students
+    }
+  }, [profile, router]);
+
   const [complaints, setComplaints] = useState<any[]>([]);
   const [stats, setStats] = useState({
     total: 0,
